@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - Корочки.есть</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">К</div>
+                <div class="logo-text">Корочки.есть</div>
+            </a>
+            <div class="navbar">
+                <div class="user-info">
+                    <div class="user-avatar-container">
+                        <img id="headerAvatar" src="" alt="Аватар" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="header-avatar-placeholder" style="display: none;">
+                            <span id="headerAvatarInitial">П</span>
+                        </div>
+                    </div>
+                    <span id="userName">Пользователь</span>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">Выйти</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="main-container">
+        <div class="card">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalApplications">0</div>
+                    <div class="stat-label">Всего заявок</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeApplications">0</div>
+                    <div class="stat-label">Активные</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedApplications">0</div>
+                    <div class="stat-label">Завершённые</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Профиль пользователя -->
+        <div class="card">
+            <div class="profile-header">
+                <h2 class="mb-3">Мой профиль</h2>
+                <button class="btn btn-secondary btn-sm" onclick="showProfileEdit()" id="editProfileBtn">
+                    Редактировать профиль
+                </button>
+            </div>
+            
+            <div id="profileView" class="profile-view">
+                <div class="profile-avatar-section">
+                    <div class="avatar-container">
+                        <img id="profileAvatar" src="" alt="Аватар" class="profile-avatar" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Ccircle fill=%22%232563eb%22 cx=%2260%22 cy=%2260%22 r=%2260%22/%3E%3Ctext fill=%22white%22 x=%2260%22 y=%2260%22 text-anchor=%22middle%22 dy=%22.35em%22 font-size=%2240%22 font-weight=%22bold%22%3E👤%3C/text%3E%3C/svg%3E'">
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-info-item">
+                        <span class="profile-label">ФИО:</span>
+                        <span id="profileFullName" class="profile-value">Загрузка...</span>
+                    </div>
+                    <div class="profile-info-item">
+                        <span class="profile-label">Логин:</span>
+                        <span id="profileLogin" class="profile-value">Загрузка...</span>
+                    </div>
+                    <div class="profile-info-item">
+                        <span class="profile-label">Телефон:</span>
+                        <span id="profilePhone" class="profile-value">Загрузка...</span>
+                    </div>
+                    <div class="profile-info-item">
+                        <span class="profile-label">Email:</span>
+                        <span id="profileEmail" class="profile-value">Загрузка...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="mb-3">Мои заявки на обучение</h2>
+
+            <div class="applications-grid" id="applicationsList">
+                <div class="empty-state">
+                    <p class="text-muted">Загрузка заявок...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поддержка -->
+        <div class="card">
+            <div class="profile-header">
+                <h2 class="mb-3">Обращения в поддержку</h2>
+                <button class="btn btn-primary btn-sm" onclick="showSupportModal()">
+                    Создать обращение
+                </button>
+            </div>
+            
+            <div id="supportTicketsList" class="support-tickets-list">
+                <div class="empty-state">
+                    <p class="text-muted">Загрузка обращений...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно для новой заявки -->
+    <div class="modal" id="applicationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Подача заявки на обучение</h3>
+                <button class="modal-close" onclick="hideApplicationForm()" aria-label="Закрыть окно">×</button>
+            </div>
+            <form id="newApplicationForm">
+                <div class="form-group">
+                    <label for="courseSelect" class="form-label">Выберите курс</label>
+                    <select class="form-select" id="courseSelect" name="course" required aria-required="true">
+                        <option value="">Загрузка курсов...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCourseName" class="form-label">Или введите название курса</label>
+                    <input type="text" class="form-input" id="customCourseName" name="custom_course" 
+                           placeholder="Введите название курса" aria-label="Название курса">
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate" class="form-label">Желаемая дата начала обучения</label>
+                    <input type="date" class="form-input" id="startDate" name="start_date" 
+                           required aria-required="true">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentMethod" class="form-label">Способ оплаты</label>
+                    <select class="form-select" id="paymentMethod" name="payment_method" 
+                            required aria-required="true">
+                        <option value="">Выберите способ оплаты</option>
+                        <option value="наличными">Наличными</option>
+                        <option value="переводом">Переводом по номеру телефона</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Отправить заявку
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-full mt-1" 
+                            onclick="hideApplicationForm()">
+                        Отмена
+                    </button>
+                </div>
+                
+                <div id="applicationMessage" class="text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Кнопка быстрого действия -->
+    <button class="floating-action" onclick="showApplicationForm()" 
+            title="Подать заявку на обучение" aria-label="Подать новую заявку на обучение">
+        <span class="floating-action-icon">+</span>
+        <span class="floating-action-text">Подать заявку</span>
+    </button>
+
+    <!-- Модальное окно для отзыва (создается динамически) -->
+
+    <!-- Модальное окно поддержки -->
+    <div class="modal" id="supportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Создать обращение в поддержку</h3>
+                <button class="modal-close" onclick="hideSupportModal()" aria-label="Закрыть окно">×</button>
+            </div>
+            <form id="supportForm">
+                <div class="form-group">
+                    <label for="supportSubject" class="form-label">Тема обращения</label>
+                    <input type="text" class="form-input" id="supportSubject" name="subject" 
+                           placeholder="Кратко опишите проблему" required>
+                    <div id="supportSubjectError" class="text-error mt-1"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supportMessageText" class="form-label">Сообщение</label>
+                    <textarea class="form-input" id="supportMessageText" name="message" rows="6" 
+                              placeholder="Опишите вашу проблему или вопрос подробно" required></textarea>
+                    <div id="supportMessageError" class="text-error mt-1"></div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Отправить обращение
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-full mt-1" 
+                            onclick="hideSupportModal()">
+                        Отмена
+                    </button>
+                </div>
+                
+                <div id="supportFormMessage" class="text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования профиля -->
+    <div class="modal" id="profileEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Редактирование профиля</h3>
+                <button class="modal-close" onclick="hideProfileEdit()" aria-label="Закрыть окно">×</button>
+            </div>
+            <form id="profileEditForm">
+                <div class="form-group">
+                    <label class="form-label">Аватар</label>
+                    <div class="avatar-upload-section">
+                        <div class="avatar-preview-container">
+                            <img id="avatarPreview" src="" alt="Превью аватара" class="avatar-preview" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle fill=%22%232563eb%22 cx=%2250%22 cy=%2250%22 r=%2250%22/%3E%3Ctext fill=%22white%22 x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.35em%22 font-size=%2230%22%3E👤%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="avatar-upload-controls">
+                            <label for="avatarInput" class="btn btn-secondary btn-sm">
+                                Выбрать фото
+                            </label>
+                            <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;" onchange="handleAvatarSelect(event)">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeAvatar()" id="removeAvatarBtn" style="display: none;">
+                                Удалить
+                            </button>
+                        </div>
+                    </div>
+                    <div id="avatarUploadMessage" class="text-center mt-1"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editFullName" class="form-label">ФИО</label>
+                    <input type="text" class="form-input" id="editFullName" name="full_name" 
+                           placeholder="Иванов Иван Иванович" required>
+                    <div id="editFullNameError" class="text-error mt-1"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editPhone" class="form-label">Телефон</label>
+                    <input type="tel" class="form-input" id="editPhone" name="phone" 
+                           placeholder="8(999)123-45-67" required>
+                    <div id="editPhoneError" class="text-error mt-1"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editEmail" class="form-label">Email</label>
+                    <input type="email" class="form-input" id="editEmail" name="email" 
+                           placeholder="your@email.com" required>
+                    <div id="editEmailError" class="text-error mt-1"></div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Сохранить изменения
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-full mt-1" 
+                            onclick="hideProfileEdit()">
+                        Отмена
+                    </button>
+                </div>
+                
+                <div id="profileEditMessage" class="text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Корочки.есть</h3>
+                <p>Портал дополнительного профессионального образования. Мы помогаем получить качественное образование и стать востребованным специалистом.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <p>Email: info@korochnik.ru</p>
+                <p>Телефон: 8(800)123-45-67</p>
+                <p>Адрес: г. Москва, ул. Образовательная, д. 1</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Полезные ссылки</h3>
+                <p><a href="index.html">Главная</a></p>
+                <p><a href="dashboard.html">Личный кабинет</a></p>
+                <p><a href="#">О нас</a></p>
+                <p><a href="#">Помощь</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Корочки.есть. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

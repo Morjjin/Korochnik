@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подача заявки - Корочки.есть</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <h1>Подача заявки на обучение</h1>
+            <div class="user-info">
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Назад</button>
+                <button class="btn logout-btn" onclick="logout()">Выйти</button>
+            </div>
+        </div>
+
+        <div class="form-container active">
+            <form id="newApplicationForm">
+                <div class="form-group">
+                    <label for="courseSelect">Выберите курс:</label>
+                    <select id="courseSelect" name="course_name" required>
+                        <option value="">Загрузка курсов...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCourseName">Или введите название курса:</label>
+                    <input type="text" id="customCourseName" name="custom_course_name" 
+                           placeholder="Введите название курса">
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">Желаемая дата начала обучения:</label>
+                    <input type="date" id="startDate" name="start_date" required 
+                           min="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentMethod">Способ оплаты:</label>
+                    <select id="paymentMethod" name="payment_method" required>
+                        <option value="">Выберите способ оплаты</option>
+                        <option value="наличными">Наличными</option>
+                        <option value="переводом">Переводом по номеру телефона</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">Отправить заявку</button>
+                
+                <div id="applicationMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // ВАЖНО: API_BASE определяется в app.js (подключен выше)
+        // Если нужно изменить путь к API, измените его в app.js
+        
+        // Загрузка курсов при открытии страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            populateCourseSelect('courseSelect');
+            
+            // Обработчик изменения выбора курса
+            document.getElementById('courseSelect').addEventListener('change', function() {
+                const customInput = document.getElementById('customCourseName');
+                if (this.value) {
+                    customInput.disabled = true;
+                    customInput.value = '';
+                } else {
+                    customInput.disabled = false;
+                }
+            });
+            
+            // Обработчик ввода своего курса
+            document.getElementById('customCourseName').addEventListener('input', function() {
+                const courseSelect = document.getElementById('courseSelect');
+                if (this.value) {
+                    courseSelect.disabled = true;
+                    courseSelect.value = '';
+                } else {
+                    courseSelect.disabled = false;
+                }
+            });
+        });
+
+        // Обработчик формы заявки
+        document.getElementById('newApplicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const courseSelect = document.getElementById('courseSelect');
+            const customCourse = document.getElementById('customCourseName');
+            
+            let courseName = '';
+            if (courseSelect.value) {
+                courseName = courseSelect.value;
+            } else if (customCourse.value) {
+                courseName = customCourse.value;
+            } else {
+                document.getElementById('applicationMessage').textContent = 'Выберите или введите название курса';
+                document.getElementById('applicationMessage').className = 'error';
+                return;
+            }
+            
+            const formData = {
+                course_name: courseName,
+                start_date: document.getElementById('startDate').value,
+                payment_method: document.getElementById('paymentMethod').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/applications.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('applicationMessage').textContent = data.message;
+                    document.getElementById('applicationMessage').className = 'success';
+                    document.getElementById('newApplicationForm').reset();
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    document.getElementById('applicationMessage').textContent = data.error;
+                    document.getElementById('applicationMessage').className = 'error';
+                }
+            } catch (error) {
+                document.getElementById('applicationMessage').textContent = 'Ошибка соединения';
+                document.getElementById('applicationMessage').className = 'error';
+            }
+        });
+
+        // Установка минимальной даты (сегодня)
+        document.getElementById('startDate').min = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>

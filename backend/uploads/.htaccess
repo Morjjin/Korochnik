@@ -1,0 +1,7 @@
+# Разрешить доступ к файлам в папке uploads
+Options -Indexes
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+

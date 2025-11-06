@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора - Корочки.есть</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">К</div>
+                <div class="logo-text">Корочки.есть</div>
+            </a>
+            <div class="navbar">
+                <div class="user-info">
+                    <div class="user-avatar-container">
+                        <div class="header-avatar-placeholder" style="display: flex;">
+                            <span>A</span>
+                        </div>
+                    </div>
+                    <span id="userName">Администратор</span>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">Выйти</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="main-container">
+        <div class="card">
+            <h2 class="mb-2">Панель администратора</h2>
+            <p class="text-muted mb-3">Управление заявками пользователей</p>
+            
+            <div class="admin-controls">
+                <div class="form-group form-group-no-margin">
+                    <label for="statusFilter" class="form-label visually-hidden">Фильтр по статусу</label>
+                    <select class="filter-select" id="statusFilter" onchange="filterApplications()"
+                            aria-label="Фильтр по статусу заявок">
+                        <option value="">Все статусы</option>
+                        <option value="Новая">Новые</option>
+                        <option value="Идет обучение">В процессе</option>
+                        <option value="Обучение завершено">Завершённые</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="loadApplications()">
+                    Обновить
+                </button>
+            </div>
+
+            <div class="applications-grid" id="applicationsList">
+                <div class="empty-state">
+                    <p class="text-muted">Загрузка заявок...</p>
+                </div>
+            </div>
+            
+            <!-- Пагинация будет добавлена динамически -->
+        </div>
+
+        <!-- Обращения в поддержку -->
+        <div class="card">
+            <h2 class="mb-2">Обращения в поддержку</h2>
+            <p class="text-muted mb-3">Управление обращениями пользователей</p>
+            
+            <div class="admin-controls">
+                <div class="form-group form-group-no-margin">
+                    <label for="supportStatusFilter" class="form-label visually-hidden">Фильтр по статусу</label>
+                    <select class="filter-select" id="supportStatusFilter" onchange="filterSupportTickets()"
+                            aria-label="Фильтр по статусу обращений">
+                        <option value="">Все статусы</option>
+                        <option value="Открыт">Открытые</option>
+                        <option value="В обработке">В обработке</option>
+                        <option value="Решен">Решенные</option>
+                        <option value="Закрыт">Закрытые</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="loadSupportTickets()">
+                    Обновить
+                </button>
+            </div>
+
+            <div id="supportTicketsList" class="support-tickets-list">
+                <div class="empty-state">
+                    <p class="text-muted">Загрузка обращений...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно ответа на обращение -->
+    <div class="modal" id="supportResponseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ответить на обращение</h3>
+                <button class="modal-close" onclick="hideSupportResponseModal()" aria-label="Закрыть окно">×</button>
+            </div>
+            <form id="supportResponseForm">
+                <input type="hidden" id="responseTicketId">
+                <div class="form-group">
+                    <label for="supportResponseStatus" class="form-label">Статус</label>
+                    <select class="form-select" id="supportResponseStatus" name="status" required>
+                        <option value="Открыт">Открыт</option>
+                        <option value="В обработке">В обработке</option>
+                        <option value="Решен">Решен</option>
+                        <option value="Закрыт">Закрыт</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="supportResponseText" class="form-label">Ответ</label>
+                    <textarea class="form-input" id="supportResponseText" name="response" rows="6" 
+                              placeholder="Введите ответ пользователю" required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Отправить ответ
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-full mt-1" 
+                            onclick="hideSupportResponseModal()">
+                        Отмена
+                    </button>
+                </div>
+                <div id="supportResponseMessage" class="text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Корочки.есть</h3>
+                <p>Портал дополнительного профессионального образования. Мы помогаем получить качественное образование и стать востребованным специалистом.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <p>Email: info@korochnik.ru</p>
+                <p>Телефон: 8(800)123-45-67</p>
+                <p>Адрес: г. Москва, ул. Образовательная, д. 1</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Полезные ссылки</h3>
+                <p><a href="index.html">Главная</a></p>
+                <p><a href="dashboard.html">Личный кабинет</a></p>
+                <p><a href="#">О нас</a></p>
+                <p><a href="#">Помощь</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Корочки.есть. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
