@@ -166,6 +166,57 @@ body {
     font-size: 1.1rem;
 }
 
+/* Hero CTA tweaks: более заметная основная кнопка */
+.hero-actions .btn-primary {
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.24);
+    border-radius: 10px;
+    min-width: 220px;
+}
+
+.hero-actions .btn-secondary {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.hero-section .hero-content { padding-top: 1rem; padding-bottom: 1rem; }
+
+/* Новые стили для переработанного hero */
+.hero-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr; align-items: center; }
+.hero-text { text-align: left; }
+.hero-title { font-size: 2.75rem; }
+.hero-subtitle { font-size: 1.15rem; color: rgba(255,255,255,0.95); }
+
+.hero-badges { margin: 1.25rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.badge { background: rgba(255,255,255,0.12); color: white; padding: 0.4rem 0.75rem; border-radius: 999px; font-weight: 600; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.08); }
+
+@media (min-width: 900px) {
+    .hero-content { grid-template-columns: 1fr 420px; gap: 2rem; }
+    .hero-text { padding-right: 1rem; }
+    .hero-title { font-size: 3.25rem; }
+    .hero-subtitle { font-size: 1.25rem; }
+    .hero-section { padding: 5rem 2rem; }
+}
+
+@media (max-width: 768px) {
+    .hero-text { text-align: center; }
+    .hero-badges { justify-content: center; }
+}
+
+/* Центрируем кнопки в середине hero: занимаем всю ширину сетки и центрируем содержимое */
+.hero-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+@media (min-width: 900px) {
+    /* на больших экранах немного смещаем кнопки вниз относительно заголовка */
+    .hero-actions { margin-top: 2rem; }
+}
+
 /* === ОСНОВНОЙ КОНТЕЙНЕР === */
 .main-container {
     max-width: 1200px;
@@ -623,6 +674,63 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
+}
+
+/* === ОТЗЫВЫ === */
+.reviews-section {
+    padding: 1.5rem 2rem;
+}
+
+.reviews-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.review-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.92));
+    border-radius: 16px;
+    padding: 1rem 1rem 1.25rem 1rem;
+    box-shadow: 0 8px 30px rgba(16,24,40,0.06), 0 2px 6px rgba(16,24,40,0.04);
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border: 1px solid rgba(16,24,40,0.04);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+}
+
+.review-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 50px rgba(16,24,40,0.12);
+}
+
+.review-top { display: flex; gap: 0.75rem; align-items: center; }
+.review-avatar-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.review-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; display: block; border: 2px solid rgba(0,0,0,0.06); }
+.review-avatar-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-weight: 700; border-radius: 50%; font-size: 1.1rem; }
+
+.review-meta { display: flex; flex-direction: column; }
+.review-name { font-weight: 700; color: var(--dark); font-size: 1rem; }
+.review-time { font-size: 0.85rem; color: var(--gray); }
+
+.review-body { color: var(--dark); line-height: 1.6; white-space: pre-wrap; font-size: 0.95rem; margin-top: 0.25rem; }
+
+/* Quote mark */
+.review-card::before {
+    content: "“";
+    font-size: 48px;
+    color: rgba(37,99,235,0.08);
+    position: absolute;
+    transform: translateY(-10px);
+}
+
+@media (max-width: 768px) {
+    .reviews-list { grid-template-columns: 1fr; }
+    .review-avatar { width: 48px; height: 48px; }
+    .review-avatar-wrap { width: 48px; height: 48px; }
 }
 
 .course-preview-card {
@@ -1321,46 +1429,87 @@ body {
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
-                transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-                filter 0.8s ease;
-    transform: translateX(100%) scale(1.05);
-    filter: blur(2px);
+    transition: opacity 0.7s ease-in-out, 
+                transform 0.7s ease-in-out,
+                filter 0.7s ease-in-out;
+    transform: translateX(100%);
+    filter: blur(1px);
     z-index: 0;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
 }
 
 .slide.active {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
     filter: blur(0);
     z-index: 1;
 }
 @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(100%) scale(1.05); }
-    to   { opacity: 1; transform: translateX(0) scale(1); }
+    from { opacity: 0; transform: translateX(100%); }
+    to   { opacity: 1; transform: translateX(0); }
   }
   @keyframes slideOutLeft {
-    from { opacity: 1; transform: translateX(0) scale(1); }
-    to   { opacity: 0; transform: translateX(-100%) scale(1.05); }
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-100%); }
   }
   @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-100%) scale(1.05); }
-    to   { opacity: 1; transform: translateX(0) scale(1); }
+    from { opacity: 0; transform: translateX(-100%); }
+    to   { opacity: 1; transform: translateX(0); }
   }
   @keyframes slideOutRight {
-    from { opacity: 1; transform: translateX(0) scale(1); }
-    to   { opacity: 0; transform: translateX(100%) scale(1.05); }
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(100%); }
   }
-  .slide-in-right { animation: slideInRight 0.6s cubic-bezier(.4,0,.2,1); z-index: 2; }
-  .slide-out-left { animation: slideOutLeft 0.6s cubic-bezier(.4,0,.2,1); z-index: 1; }
-  .slide-in-left { animation: slideInLeft 0.6s cubic-bezier(.4,0,.2,1); z-index: 2; }
-  .slide-out-right { animation: slideOutRight 0.6s cubic-bezier(.4,0,.2,1); z-index: 1; }
+  .slide-in-right { animation: slideInRight 0.7s ease-in-out forwards; z-index: 2; }
+  .slide-out-left { animation: slideOutLeft 0.7s ease-in-out forwards; z-index: 1; }
+  .slide-in-left { animation: slideInLeft 0.7s ease-in-out forwards; z-index: 2; }
+  .slide-out-right { animation: slideOutRight 0.7s ease-in-out forwards; z-index: 1; }
 
 .slide img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+/* Caption on slides */
+.slide-caption {
+    position: absolute;
+    left: 2rem;
+    bottom: 2rem;
+    max-width: 50%;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.4);
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.2) 100%);
+    padding: 1.5rem;
+    border-radius: 8px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    z-index: 5;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease-in-out 0.1s, transform 0.7s ease-in-out 0.1s;
+}
+
+.slide.active .slide-caption {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-caption h3 { margin: 0 0 0.35rem 0; font-size: 1.6rem; line-height: 1.1; }
+.slide-caption p { margin: 0; opacity: 0.95; font-size: 1rem; }
+
+@media (max-width: 900px) {
+    .slide-caption { 
+        left: 1rem; 
+        right: 1rem; 
+        max-width: calc(100% - 2rem); 
+        bottom: 1rem; 
+        padding: 1.25rem;
+        text-align: left; 
+    }
+    .slide-caption h3 { font-size: 1.25rem; }
 }
 
 .slider-btn {
@@ -1378,15 +1527,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     color: var(--dark);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .slider-btn:hover {
     background: white;
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.slider-btn:active {
+    transform: translateY(-50%) scale(0.95);
 }
 
 .slider-btn-prev {
@@ -1413,18 +1566,29 @@ body {
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.5);
     cursor: pointer;
-    transition: all 0.3s ease;
+    appearance: none;
+    border: none;
+    padding: 0;
+    display: inline-block;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .dot.active {
     background: white;
-    transform: scale(1.2);
+    transform: scale(1.3);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
 .dot:hover {
     background: rgba(255, 255, 255, 0.8);
     transform: scale(1.1);
+}
+
+/* Focus styles for keyboard users */
+.dot:focus {
+    outline: 3px solid rgba(37, 99, 235, 0.9);
+    outline-offset: 3px;
 }
 
 /* === TEXTAREA STYLES === */
@@ -1716,4 +1880,167 @@ textarea.form-input {
         font-size: 0.8rem;
         margin: 0 0.5rem;
     }
+}
+@media (max-width: 1024px) {
+    .hero-section { padding: 3.5rem 1.5rem; }
+    .hero-content { grid-template-columns: 1fr; }
+    .slide-caption { max-width: 60%; left: 1.25rem; bottom: 1.25rem; padding: 1.25rem; }
+}
+
+/* ================== ВАЛИДАЦИЯ ПОЛЕЙ ================== */
+
+.input-valid,
+.input-error {
+    transition: border-color 0.3s, background-color 0.3s, box-shadow 0.2s;
+}
+
+.input-valid {
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+.input-valid:focus {
+    border-color: #059669;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+.input-error:focus {
+    border-color: #dc2626;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Текст ошибки/успеха */
+.text-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    display: block;
+    font-weight: 500;
+}
+
+.text-success {
+    color: #059669;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Требования к паролю */
+.password-requirements {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f3f4f6;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    border-left: 3px solid #d1d5db;
+}
+
+.requirement-met {
+    color: #059669;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.requirement-met:last-child {
+    margin-bottom: 0;
+}
+
+.requirement-not-met {
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.requirement-not-met:last-child {
+    margin-bottom: 0;
+}
+
+.requirement-met span,
+.requirement-not-met span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+    font-weight: bold;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Подсказка под полем */
+.form-help {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ====================================================== */
+
+@media (max-width: 900px) {
+    .hero-title { font-size: 2.1rem; }
+    .hero-subtitle { font-size: 1rem; }
+    .slide { height: 320px; }
+    .slide-caption { max-width: 70%; }
+}
+
+@media (max-width: 600px) {
+    /* Кнопки hero вертикально, занимают удобную ширину */
+    .hero-actions { flex-direction: column; gap: 0.75rem; }
+    .btn-lg { width: 100%; padding: 0.9rem 1rem; }
+    .slide { height: 260px; }
+    .slide-caption {
+        left: 1rem;
+        right: 1rem;
+        max-width: calc(100% - 2rem);
+        bottom: 0.9rem;
+        padding: 1rem;
+        text-align: center;
+    }
+    .slide-caption h3 { font-size: 1.15rem; }
+    .slide-caption p { display: none; } /* укоротить текст на мобильных */
+    .reviews-list { grid-template-columns: 1fr; }
+    .course-preview-card { padding: 1.25rem; }
+    
+    /* Валидация на мобильных */
+    .password-requirements {
+        font-size: 0.75rem;
+    }
+    
+    .requirement-met,
+    .requirement-not-met {
+        margin-bottom: 0.35rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .header-container { padding: 0.5rem 0.75rem; }
+    .hero-section { padding: 2rem 0.75rem; }
+    .hero-title { font-size: 1.5rem; }
+    .hero-subtitle { font-size: 0.95rem; }
+    .slide { height: 220px; }
+    .slide-caption h3 { font-size: 1rem; }
+    .review-avatar { width: 44px; height: 44px; }
+}
+
+/* Header: компактнее на узких экранах */
+@media (max-width: 640px) {
+    .logo-text { font-size: 1rem; }
+    .header-avatar { width: 36px; height: 36px; }
+}
+
+/* Футер: вертикальная раскладка на мобильных */
+@media (max-width: 600px) {
+    .footer-container { grid-template-columns: 1fr; padding: 0 1rem; }
 }

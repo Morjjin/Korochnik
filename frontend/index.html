@@ -1,10 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Корочки.есть - Портал дополнительного образования</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Корочки.есть - Портал дополнительного образования</title>
+        <meta name="description" content="Корочки.есть — портал дополнительного профессионального образования: курсы, сертификаты и поддержка. Начните обучение онлайн уже сегодня.">
+        <meta name="robots" content="index, follow">
+        <!-- Open Graph -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Корочки.есть - Портал дополнительного образования">
+        <meta property="og:description" content="Курсы, сертификаты и поддержка — качественное дополнительное образование для карьерного роста.">
+        <meta property="og:image" content="images/slide1.jpg">
+        <meta property="og:url" content="/">
+        <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
+        <!-- Structured data (Organization) -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Корочки.есть",
+            "url": "/",
+            "logo": "images/slide1.jpg",
+            "sameAs": []
+        }
+        </script>
 </head>
 <body>
     <!-- Шапка -->
@@ -17,7 +38,7 @@
             <div class="navbar">
                 <div class="user-info" id="headerUserInfo" style="display: none;">
                     <div class="user-avatar-container">
-                        <img id="headerAvatarIndex" src="" alt="Аватар" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <img id="headerAvatarIndex" src="" alt="Аватар пользователя" loading="lazy" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="header-avatar-placeholder" style="display: none;">
                             <span id="headerAvatarInitialIndex">П</span>
                         </div>
@@ -34,19 +55,29 @@
 
     <!-- Hero секция -->
     <section class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">Портал дополнительного профессионального образования</h1>
-            <p class="hero-subtitle">Получите качественное образование и станьте востребованным специалистом в своей области</p>
+        <div class="hero-content" role="region" aria-label="Главная секция">
+            <div class="hero-text">
+                <h1 class="hero-title">Освойте новую профессию и получите сертификат</h1>
+                <p class="hero-subtitle">Практические курсы, реальные проекты и поддержка наставников — начните обучение уже сегодня.</p>
+
+                <div class="hero-badges" aria-hidden="true">
+                    <span class="badge">Практика</span>
+                    <span class="badge">Сертификат</span>
+                    <span class="badge">Поддержка 24/7</span>
+                </div>
+            </div>
             <div class="hero-actions">
-                <button class="btn btn-primary btn-lg" onclick="handleStartLearning()" id="startLearningBtn">
-                    Начать обучение
+                <button class="btn btn-primary btn-lg" onclick="handleStartLearning()" id="startLearningBtn" aria-label="Записаться на курс">
+                    Записаться
                 </button>
-                <button class="btn btn-secondary btn-lg" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})">
+                <button class="btn btn-secondary btn-lg" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})" aria-label="Узнать больше">
                     Узнать больше
                 </button>
             </div>
         </div>
     </section>
+
+    <!-- Отзывы пользоватеелей (перемещено ниже) -->
 
     <!-- Основной контент -->
     <main class="main-container">
@@ -56,25 +87,41 @@
                 <div class="slider" id="imageSlider">
                     <div class="slider-wrapper">
                         <div class="slide active">
-                            <img src="images/slide1.jpg" alt="Образование" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%232563eb%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EОбразование%3C/text%3E%3C/svg%3E'">
+                            <img src="images/slide1.jpg" alt="Образование" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%232563eb%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EОбразование%3C/text%3E%3C/svg%3E'">
+                            <div class="slide-caption">
+                                <h3>Учись с практикой — проекты вместо теории</h3>
+                                <p>Курс с реальными заданиями, наставниками и портфолио, которое можно показать работодателю.</p>
+                            </div>
                         </div>
                         <div class="slide">
-                            <img src="images/slide2.jpg" alt="Курсы" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%2310b981%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EКурсы%3C/text%3E%3C/svg%3E'">
+                            <img src="images/slide2.jpg" alt="Курсы" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%2310b981%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EКурсы%3C/text%3E%3C/svg%3E'">
+                            <div class="slide-caption">
+                                <h3>Карьера и новые возможности</h3>
+                                <p>Программы, которые действительно помогают получить работу и расти в профессии.</p>
+                            </div>
                         </div>
                         <div class="slide">
-                            <img src="images/slide3.jpg" alt="Профессионализм" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f59e0b%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EПрофессионализм%3C/text%3E%3C/svg%3E'">
+                            <img src="images/slide3.jpg" alt="Профессионализм" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f59e0b%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EПрофессионализм%3C/text%3E%3C/svg%3E'">
+                            <div class="slide-caption">
+                                <h3>Глубокие навыки за короткое время</h3>
+                                <p>Интенсивы и менторство для быстрого результата и роста компетенций.</p>
+                            </div>
                         </div>
                         <div class="slide">
-                            <img src="images/slide4.jpg" alt="Успех" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23ef4444%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EУспех%3C/text%3E%3C/svg%3E'">
+                            <img src="images/slide4.jpg" alt="Успех" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23ef4444%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3EУспех%3C/text%3E%3C/svg%3E'">
+                            <div class="slide-caption">
+                                <h3>Достигай целей</h3>
+                                <p>Получай сертификат, подтверждай навыки и прокладывай путь к новым достижениям.</p>
+                            </div>
                         </div>
                     </div>
                     <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Предыдущее изображение">‹</button>
                     <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Следующее изображение">›</button>
                     <div class="slider-dots">
-                        <span class="dot active" onclick="goToSlide(0)"></span>
-                        <span class="dot" onclick="goToSlide(1)"></span>
-                        <span class="dot" onclick="goToSlide(2)"></span>
-                        <span class="dot" onclick="goToSlide(3)"></span>
+                        <button type="button" class="dot active" onclick="goToSlide(0)" aria-label="Перейти к слайду 1" aria-current="true"></button>
+                        <button type="button" class="dot" onclick="goToSlide(1)" aria-label="Перейти к слайду 2"></button>
+                        <button type="button" class="dot" onclick="goToSlide(2)" aria-label="Перейти к слайду 3"></button>
+                        <button type="button" class="dot" onclick="goToSlide(3)" aria-label="Перейти к слайду 4"></button>
                     </div>
                 </div>
             </div>
@@ -146,6 +193,14 @@
                 </div>
             </div>
         </section>
+        
+        <!-- Отзывы студентов (перемещено сюда) -->
+        <section id="reviews" class="card reviews-section">
+            <h2 class="text-center mb-3">Отзывы студентов</h2>
+            <div id="reviewsList" class="reviews-list">
+                <div class="loading-state">Загрузка отзывов...</div>
+            </div>
+        </section>
     </main>
 
     <!-- Модальное окно авторизации -->
@@ -160,19 +215,35 @@
                 <form id="loginFormElement" class="mb-2">
                     <div class="form-group">
                         <label for="login" class="form-label">Логин</label>
-                        <input type="text" class="form-input" id="login" name="login" placeholder="Введите ваш логин" required>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="login" 
+                            name="login" 
+                            placeholder="Введите ваш логин" 
+                            aria-describedby="loginError"
+                            required
+                        >
+                        <div id="loginError"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="password" class="form-label">Пароль</label>
-                        <input type="password" class="form-input" id="password" name="password" placeholder="Введите ваш пароль" required>
+                        <input 
+                            type="password" 
+                            class="form-input" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Введите ваш пароль" 
+                            aria-describedby="passwordError"
+                            required
+                        >
+                        <div id="passwordError"></div>
                     </div>
                     
                     <button type="submit" class="btn btn-primary btn-full">
                         Войти в систему
                     </button>
-                    
-                    <div id="loginError" class="text-error mt-1"></div>
                 </form>
 
                 <div class="text-center">
@@ -187,32 +258,74 @@
                 <form id="registerFormElement">
                     <div class="form-group">
                         <label for="regLogin" class="form-label">Логин</label>
-                        <input type="text" class="form-input" id="regLogin" name="login" placeholder="Только латиница и цифры (от 6 символов)" required>
-                        <div id="loginErrorMsg" class="text-error mt-1"></div>
+                        <small id="regLoginHelp" class="form-help">6-20 символов, латиница, цифры, дефис и подчеркивание</small>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="regLogin" 
+                            name="login" 
+                            placeholder="username_123" 
+                            aria-describedby="regLoginHelp regLoginError"
+                            required
+                        >
+                        <div id="regLoginError"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="regPassword" class="form-label">Пароль</label>
-                        <input type="password" class="form-input" id="regPassword" name="password" placeholder="Минимум 8 символов" required>
-                        <div id="passwordErrorMsg" class="text-error mt-1"></div>
+                        <small id="regPasswordHelp" class="form-help">Требования видны при вводе</small>
+                        <input 
+                            type="password" 
+                            class="form-input" 
+                            id="regPassword" 
+                            name="password" 
+                            placeholder="••••••••" 
+                            aria-describedby="regPasswordHelp regPasswordError"
+                            required
+                        >
+                        <div id="regPasswordError"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="fullName" class="form-label">ФИО</label>
-                        <input type="text" class="form-input" id="fullName" name="full_name" placeholder="Иванов Иван Иванович" required>
-                        <div id="nameErrorMsg" class="text-error mt-1"></div>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="fullName" 
+                            name="full_name" 
+                            placeholder="Иванов Иван Иванович" 
+                            aria-describedby="fullNameError"
+                            required
+                        >
+                        <div id="fullNameError"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="phone" class="form-label">Телефон</label>
-                        <input type="tel" class="form-input" id="phone" name="phone" placeholder="8(999)123-45-67" required>
-                        <div id="phoneErrorMsg" class="text-error mt-1"></div>
+                        <input 
+                            type="tel" 
+                            class="form-input" 
+                            id="phone" 
+                            name="phone" 
+                            placeholder="8(999)123-45-67" 
+                            aria-describedby="phoneError"
+                            required
+                        >
+                        <div id="phoneError"></div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-input" id="email" name="email" placeholder="your@email.com" required>
-                        <div id="emailErrorMsg" class="text-error mt-1"></div>
+                        <label for="regEmail" class="form-label">Email</label>
+                        <input 
+                            type="email" 
+                            class="form-input" 
+                            id="regEmail" 
+                            name="email" 
+                            placeholder="your@email.com" 
+                            aria-describedby="regEmailError"
+                            required
+                        >
+                        <div id="regEmailError"></div>
                     </div>
                     
                     <button type="submit" class="btn btn-primary btn-full">
@@ -225,7 +338,7 @@
                         </button>
                     </div>
                     
-                    <div id="registerSuccess" class="text-success mt-1 text-center"></div>
+                    <div id="registerSuccess" class="text-center mt-2"></div>
                 </form>
             </div>
         </div>

@@ -204,6 +204,12 @@ document.addEventListener('DOMContentLoaded', function() {
 async function handleLogin(e) {
     e.preventDefault();
     
+    // Валидация формы входа
+    if (!validateFormFields(false)) {
+        console.log('Форма входа невалидна');
+        return;
+    }
+    
     const login = document.getElementById('login').value;
     const password = document.getElementById('password').value;
     
@@ -247,7 +253,7 @@ async function handleLogin(e) {
             window.location.href = 'dashboard.html';
         }
     } else {
-        showError('loginError', result.error);
+        showError('password', result.error);
     }
 }
 
@@ -255,54 +261,26 @@ async function handleLogin(e) {
 async function handleRegister(e) {
     e.preventDefault();
     
+    // Валидация формы регистрации (новая система)
+    if (!validateFormFields(true)) {
+        console.log('Форма регистрации невалидна');
+        return;
+    }
+    
     const formData = {
         login: document.getElementById('regLogin').value,
         password: document.getElementById('regPassword').value,
         full_name: document.getElementById('fullName').value,
         phone: document.getElementById('phone').value,
-        email: document.getElementById('email').value,
+        email: document.getElementById('regEmail').value,
         action: 'register'
     };
     
-    // Валидация
-    let isValid = true;
-    
-    if (!validateLogin(formData.login)) {
-        showError('loginErrorMsg', 'Логин должен содержать только латиницу и цифры, минимум 6 символов');
-        isValid = false;
-    } else {
-        clearError('loginErrorMsg');
-    }
-    
-    if (!validatePassword(formData.password)) {
-        showError('passwordErrorMsg', 'Пароль должен содержать минимум 8 символов');
-        isValid = false;
-    } else {
-        clearError('passwordErrorMsg');
-    }
-    
-    if (!validateFullName(formData.full_name)) {
-        showError('nameErrorMsg', 'ФИО должно содержать только кириллицу и пробелы');
-        isValid = false;
-    } else {
-        clearError('nameErrorMsg');
-    }
-    
-    if (!validatePhone(formData.phone)) {
+    // Проверка телефона остаётся для дополнительной безопасности
+    if (formData.phone && !validatePhone(formData.phone)) {
         showError('phoneErrorMsg', 'Телефон должен быть в формате 8(XXX)XXX-XX-XX');
-        isValid = false;
-    } else {
-        clearError('phoneErrorMsg');
+        return;
     }
-    
-    if (!validateEmail(formData.email)) {
-        showError('emailErrorMsg', 'Некорректный формат email');
-        isValid = false;
-    } else {
-        clearError('emailErrorMsg');
-    }
-    
-    if (!isValid) return;
     
     const result = await apiFetch('auth.php', {
         method: 'POST',
@@ -357,7 +335,7 @@ async function handleRegister(e) {
             }
         }, 1000);
     } else {
-        showError('loginErrorMsg', result.error);
+        showError('regPasswordError', result.error);
     }
 }
 
@@ -565,6 +543,189 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+// ================== ВАЛИДАЦИЯ В РЕАЛЬНОМ ВРЕМЕНИ ==================
+
+// Правила валидации
+const validationRules = {
+    login: {
+        pattern: /^[a-zA-Z0-9_-]{6,20}$/,
+        message: 'Логин: 6-20 символов, латиница, цифры, - и _',
+        minLength: 6
+    },
+    email: {
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: 'Введите корректный email',
+        type: 'email'
+    },
+    password: {
+        minLength: 8,
+        requirements: {
+            length: { pattern: /.{8,}/, label: 'Минимум 8 символов' },
+            uppercase: { pattern: /[A-Z]/, label: 'Минимум одна заглавная буква' },
+            number: { pattern: /\d/, label: 'Минимум одна цифра' }
+        },
+        message: 'Пароль не соответствует требованиям'
+    },
+    fio: {
+        pattern: /^[а-яА-ЯёЁ\s-]{2,}$/,
+        message: 'ФИО: только кириллица, пробелы и дефисы',
+        minLength: 2
+    }
+};
+
+// Функция валидации одного поля
+function validateField(fieldName, value) {
+    const rules = validationRules[fieldName];
+    if (!rules) return { isValid: true };
+    
+    // Проверка пустого поля
+    if (!value || value.trim() === '') {
+        return { 
+            isValid: false, 
+            message: 'Поле обязательно',
+            type: 'error'
+        };
+    }
+    
+    // Специальная логика для пароля
+    if (fieldName === 'password') {
+        const failedRequirements = [];
+        
+        Object.entries(rules.requirements).forEach(([key, rule]) => {
+            if (!rule.pattern.test(value)) {
+                failedRequirements.push(rule.label);
+            }
+        });
+        
+        if (failedRequirements.length > 0) {
+            return {
+                isValid: false,
+                message: rules.message,
+                type: 'error',
+                requirements: failedRequirements,
+                allRequirements: rules.requirements
+            };
+        }
+        
+        return { 
+            isValid: true, 
+            type: 'success',
+            message: 'Пароль надёжный ✓'
+        };
+    }
+    
+    // Стандартная валидация по pattern
+    if (rules.pattern && !rules.pattern.test(value)) {
+        return {
+            isValid: false,
+            message: rules.message,
+            type: 'error'
+        };
+    }
+    
+    return { 
+        isValid: true, 
+        type: 'success',
+        message: 'OK ✓'
+    };
+}
+
+// Функция отображения ошибки/успеха
+function showFieldStatus(inputId, validation) {
+    const field = document.getElementById(inputId);
+    if (!field) return;
+    
+    const errorDiv = document.getElementById(`${inputId}Error`);
+    if (!errorDiv) return;
+    
+    // Очистить классы
+    field.classList.remove('input-valid', 'input-error');
+    errorDiv.innerHTML = '';
+    
+    if (validation.isValid) {
+        field.classList.add('input-valid');
+        field.setAttribute('aria-invalid', 'false');
+        
+        if (validation.message) {
+            errorDiv.innerHTML = `<span class="text-success">${validation.message}</span>`;
+        }
+    } else {
+        field.classList.add('input-error');
+        field.setAttribute('aria-invalid', 'true');
+        
+        let html = `<span class="text-error">${validation.message}</span>`;
+        
+        // Для пароля: показать требования
+        if (inputId === 'regPassword' && validation.requirements && validation.allRequirements) {
+            html += '<div class="password-requirements">';
+            
+            Object.entries(validation.allRequirements).forEach(([key, req]) => {
+                const isMet = req.pattern.test(field.value);
+                const icon = isMet ? '✓' : '✗';
+                const className = isMet ? 'requirement-met' : 'requirement-not-met';
+                html += `<div class="${className}"><span>${icon}</span> ${req.label}</div>`;
+            });
+            
+            html += '</div>';
+        }
+        
+        errorDiv.innerHTML = html;
+    }
+}
+
+// Привязать валидацию к полям в реальном времени
+function setupRealtimeValidation() {
+    const validationFields = [
+        { id: 'regLogin', fieldName: 'login' },
+        { id: 'regEmail', fieldName: 'email' },
+        { id: 'regPassword', fieldName: 'password' },
+        { id: 'fullName', fieldName: 'fio' },
+        { id: 'email', fieldName: 'email' },
+        { id: 'login', fieldName: 'login' },
+        { id: 'password', fieldName: 'password' }
+    ];
+    
+    validationFields.forEach(({ id, fieldName }) => {
+        const field = document.getElementById(id);
+        if (!field) return;
+        
+        // Валидация при вводе
+        field.addEventListener('input', function() {
+            const validation = validateField(fieldName, this.value);
+            showFieldStatus(id, validation);
+        });
+        
+        // Валидация при blur (потеря фокуса)
+        field.addEventListener('blur', function() {
+            if (this.value.trim() !== '') {
+                const validation = validateField(fieldName, this.value);
+                showFieldStatus(id, validation);
+            }
+        });
+    });
+}
+
+// Улучшенная валидация формы перед отправкой
+function validateFormFields(isRegister = false) {
+    const fieldMapping = isRegister 
+        ? { regLogin: 'login', regEmail: 'email', regPassword: 'password', fullName: 'fio' }
+        : { login: 'login', password: 'password' };
+    
+    let isValid = true;
+    
+    Object.entries(fieldMapping).forEach(([inputId, fieldName]) => {
+        const field = document.getElementById(inputId);
+        if (!field) return;
+        
+        const validation = validateField(fieldName, field.value);
+        showFieldStatus(inputId, validation);
+        
+        if (!validation.isValid) isValid = false;
+    });
+    
+    return isValid;
+}
+
 // Image Slider functionality
 let currentSlide = 0;
 let slideInterval;
@@ -584,6 +745,12 @@ function initSlider() {
         slider.addEventListener('mouseenter', () => clearInterval(slideInterval));
         slider.addEventListener('mouseleave', () => {
             slideInterval = setInterval(() => changeSlide(1), 3000);
+        });
+        // Make slider focusable for keyboard navigation
+        slider.setAttribute('tabindex', '0');
+        slider.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); changeSlide(1); }
         });
     }
 }
@@ -611,14 +778,24 @@ function changeSlide(direction) {
     slides[nextSlideIdx].classList.add(inClass, 'active');
     if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
     if (dots[nextSlideIdx]) dots[nextSlideIdx].classList.add('active');
+    // update aria-current on dots for screen readers
+    if (dots && dots.length) {
+        dots.forEach((d, i) => {
+            if (i === nextSlideIdx) {
+                d.setAttribute('aria-current', 'true');
+            } else {
+                d.removeAttribute('aria-current');
+            }
+        });
+    }
   
-    // Обновляем индекс текущего слайда после анимации
+    // Обновляем индекс текущего слайда после анимации (700ms - длительность CSS анимации)
     setTimeout(() => {
       slides[currentSlide].classList.remove('active', outClass);
       slides[nextSlideIdx].classList.remove(inClass);
       slides[nextSlideIdx].classList.add('active');
       currentSlide = nextSlideIdx;
-    }, 600); // длительность анимации
+    }, 700);
   
     clearInterval(slideInterval);
     slideInterval = setInterval(() => changeSlide(1), 3000);
@@ -640,6 +817,13 @@ function goToSlide(index) {
     setTimeout(() => {
         slides[currentSlide].classList.add('active');
         if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+        // aria-current для доступности
+        if (dots && dots.length) {
+            dots.forEach((d, i) => {
+                if (i === currentSlide) d.setAttribute('aria-current', 'true');
+                else d.removeAttribute('aria-current');
+            });
+        }
     }, 50);
     
     // Сброс интервала
@@ -649,6 +833,9 @@ function goToSlide(index) {
 
 // Инициализация слайдера при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
+    // Инициализировать real-time валидацию форм
+    setupRealtimeValidation();
+    
     if (document.getElementById('imageSlider')) {
         initSlider();
     }
@@ -672,4 +859,148 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Инициализация отзывов: сначала рендер из кеша или загрузка, фоновой апдейт кеша каждые 5 минут
+    if (document.getElementById('reviewsList')) {
+        const REVIEWS_LIMIT = 5;
+        initReviews(REVIEWS_LIMIT);
+        // Фоновое обновление кеша каждые 5 минут (300000 ms)
+        setInterval(() => backgroundUpdateReviews(REVIEWS_LIMIT), 300000);
+    }
 });
+
+// --- Reviews: cache + rendering (reviews change only on page reload; cache updates in background) ---
+const REVIEWS_CACHE_KEY = 'reviews_cache_v1';
+const REVIEWS_CACHE_TS = 'reviews_cache_ts_v1';
+const REVIEWS_CACHE_TTL = 300000; // 5 минут
+
+async function initReviews(limit = 5) {
+    const container = document.getElementById('reviewsList');
+    if (!container) return;
+
+    // Показать спиннер
+    container.innerHTML = '<div class="loading-state">Загрузка отзывов...</div>';
+
+    try {
+        const cached = getCachedReviews();
+        const now = Date.now();
+        if (cached && (now - cached.ts) < REVIEWS_CACHE_TTL) {
+            renderReviews(cached.data);
+            // Запуск фоновой загрузки (обновит кеш, но не DOM)
+            backgroundUpdateReviews(limit);
+            return;
+        }
+
+        // Нет актуального кеша — загрузим с сервера и отобразим
+        const result = await apiFetch(`reviews.php?limit=${limit}`);
+        if (result.success) {
+            const reviews = result.data || [];
+            renderReviews(reviews);
+            saveReviewsToCache(reviews);
+        } else {
+            container.innerHTML = `<div class="error-state">Не удалось загрузить отзывы. Попробуйте позже.</div>`;
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = `<div class="error-state">Ошибка загрузки отзывов</div>`;
+    }
+}
+
+function getCachedReviews() {
+    try {
+        const raw = localStorage.getItem(REVIEWS_CACHE_KEY);
+        const ts = localStorage.getItem(REVIEWS_CACHE_TS);
+        if (!raw || !ts) return null;
+        return { data: JSON.parse(raw), ts: parseInt(ts, 10) };
+    } catch (e) {
+        return null;
+    }
+}
+
+function saveReviewsToCache(reviews) {
+    try {
+        localStorage.setItem(REVIEWS_CACHE_KEY, JSON.stringify(reviews));
+        localStorage.setItem(REVIEWS_CACHE_TS, String(Date.now()));
+    } catch (e) {
+        console.warn('Не удалось сохранить кеш отзывов', e);
+    }
+}
+
+async function backgroundUpdateReviews(limit = 5) {
+    try {
+        const result = await apiFetch(`reviews.php?limit=${limit}`);
+        if (result.success) {
+            saveReviewsToCache(result.data || []);
+        }
+    } catch (e) {
+        // молча логируем
+        console.warn('backgroundUpdateReviews error', e);
+    }
+}
+
+function renderReviews(reviews) {
+    const container = document.getElementById('reviewsList');
+    if (!container) return;
+
+    if (!reviews || reviews.length === 0) {
+        container.innerHTML = `<div class="empty-state"><h3>Пока нет отзывов</h3><p>Станьте первым, кто оставит отзыв о курсе.</p></div>`;
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    reviews.forEach(r => {
+        const card = document.createElement('article');
+        card.className = 'review-card';
+
+        const top = document.createElement('div');
+        top.className = 'review-top';
+
+        const avatarWrap = document.createElement('div');
+        avatarWrap.className = 'review-avatar-wrap';
+        const avatarImg = document.createElement('img');
+        avatarImg.className = 'review-avatar';
+        if (r.avatar) {
+            avatarImg.src = r.avatar.startsWith('http') ? r.avatar : `${API_BASE.replace('/api', '')}/${r.avatar}`;
+        } else {
+            avatarImg.src = '';
+            avatarImg.alt = '';
+        }
+        avatarImg.loading = 'lazy';
+        avatarImg.onerror = function() { this.style.display = 'none'; };
+
+        const avatarPlaceholder = document.createElement('div');
+        avatarPlaceholder.className = 'review-avatar-placeholder';
+        avatarPlaceholder.textContent = (r.user_name || 'Пользователь').charAt(0).toUpperCase();
+
+        avatarWrap.appendChild(avatarImg);
+        avatarWrap.appendChild(avatarPlaceholder);
+
+        const meta = document.createElement('div');
+        meta.className = 'review-meta';
+        const name = document.createElement('div');
+        name.className = 'review-name';
+        name.textContent = r.user_name || 'Пользователь';
+        const time = document.createElement('div');
+        time.className = 'review-time';
+        time.textContent = r.created_at ? new Date(r.created_at).toLocaleDateString('ru-RU') : '';
+
+        meta.appendChild(name);
+        meta.appendChild(time);
+
+        top.appendChild(avatarWrap);
+        top.appendChild(meta);
+
+        const body = document.createElement('blockquote');
+        body.className = 'review-body';
+        body.innerHTML = escapeHtml(r.feedback || '');
+
+        card.appendChild(top);
+        card.appendChild(body);
+
+        fragment.appendChild(card);
+    });
+
+    container.innerHTML = '';
+    container.appendChild(fragment);
+}
