@@ -41,6 +41,8 @@ async function apiFetch(endpoint, options = {}) {
     try {
         const response = await fetch(`${API_BASE}/${endpoint}`, config);
         
+        console.log(`apiFetch: ${endpoint} - статус ${response.status}, ok=${response.ok}`); // Отладка
+        
         // Проверяем, есть ли содержимое в ответе
         const contentType = response.headers.get('content-type');
         let data = null;
@@ -48,6 +50,7 @@ async function apiFetch(endpoint, options = {}) {
         if (contentType && contentType.includes('application/json')) {
             try {
                 data = await response.json();
+                console.log(`apiFetch: ${endpoint} - ответ`, data); // Отладка
             } catch (jsonError) {
                 console.error('Ошибка парсинга JSON:', jsonError);
                 throw new Error('Неверный формат ответа от сервера');
@@ -204,14 +207,20 @@ document.addEventListener('DOMContentLoaded', function() {
 async function handleLogin(e) {
     e.preventDefault();
     
-    // Валидация формы входа
-    if (!validateFormFields(false)) {
-        console.log('Форма входа невалидна');
-        return;
-    }
-    
     const login = document.getElementById('login').value;
     const password = document.getElementById('password').value;
+    
+    // Исключение для администратора: пропускаем валидацию
+    if (login === 'Admin' && password === 'KorokNET') {
+        // Администратор может иметь "невалидный" логин/пароль по регулярным выражениям
+        // но в БД он хранится с правильным хешем
+    } else {
+        // Валидация формы входа для обычных пользователей
+        if (!validateFormFields(false)) {
+            console.log('Форма входа невалидна');
+            return;
+        }
+    }
     
     const formData = {
         login: login,
@@ -219,10 +228,14 @@ async function handleLogin(e) {
         action: 'login'
     };
     
+    console.log('handleLogin: отправляю запрос', formData);
+    
     const result = await apiFetch('auth.php', {
         method: 'POST',
         body: JSON.stringify(formData)
     });
+    
+    console.log('handleLogin: ответ сервера', result);
     
     if (result.success) {
         // Сохраняем данные пользователя
@@ -235,12 +248,14 @@ async function handleLogin(e) {
             localStorage.removeItem('userAvatar');
         }
         
+        console.log('handleLogin: данные сохранены в localStorage');
+        
         // Закрываем модальное окно
         hideAuthModal();
         
         // Если на главной странице - обновляем интерфейс
         const currentPage = window.location.pathname.split('/').pop();
-        if (currentPage === 'index.html') {
+        if (currentPage === 'index.html' || currentPage === '') {
             // Обновляем шапку
             checkAuth();
             // Не перенаправляем, остаемся на главной
@@ -357,8 +372,26 @@ async function logout() {
         
         // Если на главной странице - обновляем интерфейс без перезагрузки
         const currentPage = window.location.pathname.split('/').pop();
-        if (currentPage === 'index.html') {
-            checkAuth();
+        if (currentPage === 'index.html' || currentPage === '') {
+            // Очищаем интерфейс шапки
+            const authButton = document.getElementById('authButton');
+            const headerUserInfo = document.getElementById('headerUserInfo');
+            const startLearningBtn = document.getElementById('startLearningBtn');
+            
+            if (authButton) authButton.style.display = 'block';
+            if (headerUserInfo) headerUserInfo.style.display = 'none';
+            
+            // Восстанавливаем кнопку "Записаться"
+            if (startLearningBtn) {
+                startLearningBtn.textContent = 'Записаться';
+                startLearningBtn.onclick = function() {
+                    showAuthModal();
+                };
+            }
+            
+            // Закрываем модальное окно если оно открыто
+            hideAuthModal();
+            
             return;
         }
         
@@ -426,10 +459,7 @@ function checkAuth() {
         const startLearningBtn = document.getElementById('startLearningBtn');
         if (startLearningBtn) {
             startLearningBtn.textContent = 'Перейти в личный кабинет';
-            startLearningBtn.onclick = function() {
-                const isAdmin = localStorage.getItem('isAdmin') === 'true';
-                window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
-            };
+            // НЕ переопределяем onclick, используем обработчик события вместо инлайн-атрибута
         }
         
         return;
@@ -463,15 +493,21 @@ function checkAuth() {
 
 // Обработка кнопки "Начать обучение"
 function handleStartLearning() {
+    console.log('handleStartLearning вызвана');
     const userToken = localStorage.getItem('userToken');
+    console.log('userToken:', userToken);
     
     if (userToken) {
         // Если пользователь авторизован - переходим в личный кабинет
         const isAdmin = localStorage.getItem('isAdmin') === 'true';
-        window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
+        console.log('isAdmin:', isAdmin);
+        const redirectUrl = isAdmin ? 'admin.html' : 'dashboard.html';
+        console.log('Перенаправляю на:', redirectUrl);
+        window.location.href = redirectUrl;
     } else {
         // Если не авторизован - показываем форму регистрации
-        showAuthModal(true); // true = показать форму регистрации
+        console.log('Пользователь не авторизован, открываю модалку');
+        showAuthModal(false); // false = показать форму входа, можно переключиться на регистрацию
     }
 }
 
@@ -549,7 +585,7 @@ function escapeHtml(unsafe) {
 const validationRules = {
     login: {
         pattern: /^[a-zA-Z0-9_-]{6,20}$/,
-        message: 'Логин: 6-20 символов, латиница, цифры, - и _',
+        message: 'Логин: 6-20 символов, латиница и цифры',
         minLength: 6
     },
     email: {
@@ -560,11 +596,9 @@ const validationRules = {
     password: {
         minLength: 8,
         requirements: {
-            length: { pattern: /.{8,}/, label: 'Минимум 8 символов' },
-            uppercase: { pattern: /[A-Z]/, label: 'Минимум одна заглавная буква' },
-            number: { pattern: /\d/, label: 'Минимум одна цифра' }
+            length: { pattern: /.{8,}/, label: 'Минимум 8 символов' }
         },
-        message: 'Пароль не соответствует требованиям'
+        message: 'Пароль должен быть минимум 8 символов'
     },
     fio: {
         pattern: /^[а-яА-ЯёЁ\s-]{2,}$/,

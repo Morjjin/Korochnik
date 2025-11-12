@@ -258,13 +258,13 @@
                 <form id="registerFormElement">
                     <div class="form-group">
                         <label for="regLogin" class="form-label">Логин</label>
-                        <small id="regLoginHelp" class="form-help">6-20 символов, латиница, цифры, дефис и подчеркивание</small>
+                        <small id="regLoginHelp" class="form-help">6-20 символов, латиница и цифры</small>
                         <input 
                             type="text" 
                             class="form-input" 
                             id="regLogin" 
                             name="login" 
-                            placeholder="username_123" 
+                            placeholder="username123" 
                             aria-describedby="regLoginHelp regLoginError"
                             required
                         >
@@ -273,7 +273,7 @@
                     
                     <div class="form-group">
                         <label for="regPassword" class="form-label">Пароль</label>
-                        <small id="regPasswordHelp" class="form-help">Требования видны при вводе</small>
+                        <small id="regPasswordHelp" class="form-help">Минимум 8 символов</small>
                         <input 
                             type="password" 
                             class="form-input" 

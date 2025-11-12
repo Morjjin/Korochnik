@@ -1,4 +1,16 @@
 <?php
+// Установка cookie параметров перед session_start
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '', // пусто для localhost
+    'secure' => false, // true для HTTPS продакшена
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
+session_start();
+
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: http://localhost");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -13,8 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 include_once '../config/database.php';
 include_once '../models/User.php';
-
-session_start();
 
 // Функция для отправки JSON ответа
 function sendJsonResponse($data, $statusCode = 200) {
@@ -32,7 +42,7 @@ function validateRegistrationData($data) {
     }
     
     // Валидация логина (латиница и цифры, минимум 6 символов)
-    if (!preg_match('/^[a-zA-Z0-9]{6,}$/', $data->login)) {
+    if (!preg_match('/^[a-zA-Z0-9]{6,20}$/', $data->login)) {
         return false;
     }
     
@@ -109,22 +119,33 @@ if ($method == 'POST') {
             if ($user->loginExists()) {
                 // $user->password содержит хеш из БД
                 if (password_verify($data->password, $user->password)) {
-                    session_regenerate_id(true);
+                    // Регенерируем сессию для безопасности
+                    if (session_id()) {
+                        session_regenerate_id(true);
+                    }
+                    
+                    // Сохраняем в сессию
                     $_SESSION['user_id'] = $user->id;
                     $_SESSION['is_admin'] = isset($user->is_admin) ? (bool)$user->is_admin : false;
                     $_SESSION['full_name'] = $user->full_name;
+                    
+                    // Логирование для отладки (удалить после тестирования)
+                    error_log("Login success: user_id=" . $user->id . ", is_admin=" . $_SESSION['is_admin']);
 
                     sendJsonResponse(array(
+                        "success" => true,
                         "message" => "Успешный вход",
-                        "is_admin" => $_SESSION['is_admin'],
-                        "user_id" => $user->id,
+                        "is_admin" => (bool)$_SESSION['is_admin'],
+                        "user_id" => (int)$user->id,
                         "full_name" => $user->full_name,
                         "avatar" => $user->avatar
                     ));
                 } else {
+                    error_log("Login failed: password_verify failed for user " . $data->login);
                     sendJsonResponse(array("error" => "Неверный логин или пароль"), 401);
                 }
             } else {
+                error_log("Login failed: user not found " . $data->login);
                 sendJsonResponse(array("error" => "Неверный логин или пароль"), 401);
             }
             break;
