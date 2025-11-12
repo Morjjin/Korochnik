@@ -10,6 +10,7 @@ class User {
     public $phone;
     public $email;
     public $avatar;
+    public $is_admin;
     public $created_at;
 
     public function __construct($db) {
@@ -43,6 +44,7 @@ class User {
 
     public function loginExists() {
         $query = "SELECT id, password, full_name 
+                , avatar, is_admin
                 FROM " . $this->table_name . " 
                 WHERE login = ? 
                 LIMIT 0,1";
@@ -56,6 +58,8 @@ class User {
             $this->id = $row['id'];
             $this->password = $row['password'];
             $this->full_name = $row['full_name'];
+            $this->avatar = isset($row['avatar']) ? $row['avatar'] : null;
+            $this->is_admin = isset($row['is_admin']) ? (bool)$row['is_admin'] : false;
             return true;
         }
         return false;

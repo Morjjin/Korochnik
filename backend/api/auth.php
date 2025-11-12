@@ -86,7 +86,8 @@ if ($method == 'POST') {
                 sendJsonResponse(array("error" => "Пользователь с таким логином уже существует"), 400);
             }
             
-            $user->password = $data->password; // В реальном проекте хэшируйте пароль!
+            // Хэшируем пароль перед сохранением
+            $user->password = password_hash($data->password, PASSWORD_DEFAULT);
             $user->full_name = $data->full_name;
             $user->phone = $data->phone;
             $user->email = $data->email;
@@ -103,28 +104,19 @@ if ($method == 'POST') {
                 sendJsonResponse(array("error" => "Неполные данные"), 400);
             }
 
-            // Проверка администратора
-            if ($data->login === 'Admin' && $data->password === 'KorokNET') {
-                $_SESSION['user_id'] = 'admin';
-                $_SESSION['is_admin'] = true;
-                $_SESSION['full_name'] = 'Администратор';
-                sendJsonResponse(array(
-                    "message" => "Администратор успешно вошел",
-                    "is_admin" => true,
-                    "full_name" => 'Администратор'
-                ));
-            } else {
-                $user->login = $data->login;
-                $user->password = $data->password;
-                
-                if ($user->loginExistsWithPassword()) {
+            // Проверка пользователя в базе: получаем хеш пароля и сверяем
+            $user->login = $data->login;
+            if ($user->loginExists()) {
+                // $user->password содержит хеш из БД
+                if (password_verify($data->password, $user->password)) {
+                    session_regenerate_id(true);
                     $_SESSION['user_id'] = $user->id;
-                    $_SESSION['is_admin'] = false;
+                    $_SESSION['is_admin'] = isset($user->is_admin) ? (bool)$user->is_admin : false;
                     $_SESSION['full_name'] = $user->full_name;
-                    
+
                     sendJsonResponse(array(
                         "message" => "Успешный вход",
-                        "is_admin" => false,
+                        "is_admin" => $_SESSION['is_admin'],
                         "user_id" => $user->id,
                         "full_name" => $user->full_name,
                         "avatar" => $user->avatar
@@ -132,6 +124,8 @@ if ($method == 'POST') {
                 } else {
                     sendJsonResponse(array("error" => "Неверный логин или пароль"), 401);
                 }
+            } else {
+                sendJsonResponse(array("error" => "Неверный логин или пароль"), 401);
             }
             break;
 
