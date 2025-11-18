@@ -67,10 +67,13 @@
                 </div>
             </div>
             <div class="hero-actions">
-                <button class="btn btn-primary btn-lg" onclick="handleStartLearning()" id="startLearningBtn" aria-label="Записаться на курс">
+                <button class="hero-btn hero-btn-primary" onclick="handleStartLearning()" id="startLearningBtn" aria-label="Записаться на курс">
                     Записаться
                 </button>
-                <button class="btn btn-secondary btn-lg" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})" aria-label="Узнать больше">
+                <button class="hero-btn hero-btn-secondary" onclick="window.location.href='courses.html'" aria-label="Посмотреть все курсы">
+                    Все курсы
+                </button>
+                <button class="hero-btn hero-btn-secondary" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})" aria-label="Узнать больше о нас">
                     Узнать больше
                 </button>
             </div>
@@ -175,22 +178,8 @@
         <!-- Популярные курсы -->
         <section class="card">
             <h2 class="text-center mb-3">Популярные курсы</h2>
-            <div class="courses-preview">
-                <div class="course-preview-card">
-                    <div class="course-icon">💻</div>
-                    <h3>Основы алгоритмизации и программирования</h3>
-                    <p>Изучите базовые концепции программирования, структуры данных и алгоритмы</p>
-                </div>
-                <div class="course-preview-card">
-                    <div class="course-icon">🎨</div>
-                    <h3>Основы веб-дизайна</h3>
-                    <p>Освойте принципы дизайна, работу с цветом, типографикой и композицией</p>
-                </div>
-                <div class="course-preview-card">
-                    <div class="course-icon">🗄️</div>
-                    <h3>Основы проектирования баз данных</h3>
-                    <p>Научитесь проектировать эффективные схемы баз данных и работать с SQL</p>
-                </div>
+            <div id="popularCoursesContainer" class="courses-preview">
+                <div class="loading-state">Загрузка популярных курсов...</div>
             </div>
         </section>
         
@@ -374,5 +363,25 @@
     </footer>
 
     <script src="app.js"></script>
+    <script>
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация слайдера
+            if (document.getElementById('imageSlider')) {
+                initSlider();
+            }
+            
+            // Загрузка популярных курсов
+            if (typeof loadPopularCourses === 'function') {
+                loadPopularCourses();
+            }
+            
+            // Загрузка отзывов
+            if (document.getElementById('reviewsList')) {
+                const REVIEWS_LIMIT = 5;
+                initReviews(REVIEWS_LIMIT);
+            }
+        });
+    </script>
 </body>
 </html>

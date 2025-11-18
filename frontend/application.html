@@ -3,94 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Подача заявки - Корочки.есть</title>
+    <title>Подача заявки на обучение - Корочки.есть</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .application-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .application-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .application-header h1 {
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .application-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .application-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .selected-course {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .selected-course h3 {
+            color: #0369a1;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .navigation-buttons .btn {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .application-container {
+                margin: 1rem auto;
+            }
+            
+            .application-card {
+                padding: 1.5rem;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="navbar">
-            <h1>Подача заявки на обучение</h1>
-            <div class="user-info">
-                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Назад</button>
-                <button class="btn logout-btn" onclick="logout()">Выйти</button>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">К</div>
+                <div class="logo-text">Корочки.есть</div>
+            </a>
+            <div class="navbar">
+                <div class="user-info" id="headerUserInfo" style="display: none;">
+                    <div class="user-avatar-container">
+                        <img id="headerAvatar" src="" alt="Аватар" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="header-avatar-placeholder" style="display: none;">
+                            <span id="headerAvatarInitial">П</span>
+                        </div>
+                    </div>
+                    <span id="userName">Пользователь</span>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">Выйти</button>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="showAuthModal()" id="authButton">
+                    Войти
+                </button>
             </div>
         </div>
+    </header>
 
-        <div class="form-container active">
-            <form id="newApplicationForm">
-                <div class="form-group">
-                    <label for="courseSelect">Выберите курс:</label>
-                    <select id="courseSelect" name="course_name" required>
-                        <option value="">Загрузка курсов...</option>
-                    </select>
+    <!-- Основной контент -->
+    <main class="main-container">
+        <div class="application-container">
+            <div class="application-header">
+                <h1>Подача заявки на обучение</h1>
+                <p>Заполните форму ниже чтобы записаться на выбранный курс</p>
+            </div>
+
+            <div class="application-card">
+                <div id="selectedCourseInfo" class="selected-course" style="display: none;">
+                    <h3>Выбранный курс</h3>
+                    <p id="courseNameDisplay"></p>
                 </div>
-                
-                <div class="form-group">
-                    <label for="customCourseName">Или введите название курса:</label>
-                    <input type="text" id="customCourseName" name="custom_course_name" 
-                           placeholder="Введите название курса">
-                </div>
-                
-                <div class="form-group">
-                    <label for="startDate">Желаемая дата начала обучения:</label>
-                    <input type="date" id="startDate" name="start_date" required 
-                           min="<?php echo date('Y-m-d'); ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="paymentMethod">Способ оплаты:</label>
-                    <select id="paymentMethod" name="payment_method" required>
-                        <option value="">Выберите способ оплаты</option>
-                        <option value="наличными">Наличными</option>
-                        <option value="переводом">Переводом по номеру телефона</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn">Отправить заявку</button>
-                
-                <div id="applicationMessage"></div>
-            </form>
+
+                <form id="newApplicationForm">
+                    <div class="form-group">
+                        <label for="courseSelect" class="form-label">Выберите курс:</label>
+                        <select class="form-select" id="courseSelect" name="course_name" required>
+                            <option value="">Загрузка курсов...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customCourseName" class="form-label">Или введите название курса:</label>
+                        <input type="text" class="form-input" id="customCourseName" name="custom_course_name" 
+                               placeholder="Введите название курса">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="startDate" class="form-label">Желаемая дата начала обучения:</label>
+                        <input type="date" class="form-input" id="startDate" name="start_date" required 
+                               min="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="paymentMethod" class="form-label">Способ оплаты:</label>
+                        <select class="form-select" id="paymentMethod" name="payment_method" required>
+                            <option value="">Выберите способ оплаты</option>
+                            <option value="наличными">Наличными</option>
+                            <option value="переводом">Переводом по номеру телефона</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Отправить заявку</button>
+                    
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='courses.html'">
+                            ← Вернуться к курсам
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                            Личный кабинет →
+                        </button>
+                    </div>
+                    
+                    <div id="applicationMessage" class="text-center mt-3"></div>
+                </form>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Корочки.есть</h3>
+                <p>Портал дополнительного профессионального образования. Мы помогаем получить качественное образование и стать востребованным специалистом.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <p>Email: info@korochnik.ru</p>
+                <p>Телефон: 8(800)123-45-67</p>
+                <p>Адрес: г. Москва, ул. Образовательная, д. 1</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Полезные ссылки</h3>
+                <p><a href="index.html">Главная</a></p>
+                <p><a href="courses.html">Все курсы</a></p>
+                <p><a href="dashboard.html">Личный кабинет</a></p>
+                <p><a href="#">О нас</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Корочки.есть. Все права защищены.</p>
+        </div>
+    </footer>
 
     <script src="app.js"></script>
     <script>
-        // ВАЖНО: API_BASE определяется в app.js (подключен выше)
-        // Если нужно изменить путь к API, измените его в app.js
-        
-        // Загрузка курсов при открытии страницы
+        // Глобальные переменные
+        let selectedCourseFromURL = null;
+
+        // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем авторизацию
+            if (!localStorage.getItem('userToken')) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            checkAuth();
+            initializeApplicationForm();
+        });
+
+        // Инициализация формы заявки
+        function initializeApplicationForm() {
+            // Загружаем курсы
             populateCourseSelect('courseSelect');
             
+            // Получаем параметр курса из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseName = urlParams.get('course');
+            
+            if (courseName) {
+                selectedCourseFromURL = decodeURIComponent(courseName);
+                displaySelectedCourse(selectedCourseFromURL);
+            }
+            
+            // Настройка обработчиков
+            setupEventListeners();
+            
+            // Установка минимальной даты (сегодня)
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').min = today;
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            const courseSelect = document.getElementById('courseSelect');
+            const customCourseInput = document.getElementById('customCourseName');
+            
             // Обработчик изменения выбора курса
-            document.getElementById('courseSelect').addEventListener('change', function() {
+            courseSelect.addEventListener('change', function() {
                 const customInput = document.getElementById('customCourseName');
                 if (this.value) {
                     customInput.disabled = true;
                     customInput.value = '';
+                    displaySelectedCourse(this.value);
                 } else {
                     customInput.disabled = false;
+                    hideSelectedCourse();
                 }
             });
             
             // Обработчик ввода своего курса
-            document.getElementById('customCourseName').addEventListener('input', function() {
+            customCourseInput.addEventListener('input', function() {
                 const courseSelect = document.getElementById('courseSelect');
                 if (this.value) {
                     courseSelect.disabled = true;
                     courseSelect.value = '';
+                    displaySelectedCourse(this.value);
                 } else {
                     courseSelect.disabled = false;
+                    hideSelectedCourse();
                 }
             });
-        });
 
-        // Обработчик формы заявки
-        document.getElementById('newApplicationForm').addEventListener('submit', async (e) => {
+            // Обработчик формы
+            const applicationForm = document.getElementById('newApplicationForm');
+            if (applicationForm) {
+                applicationForm.addEventListener('submit', handleApplicationSubmit);
+            }
+        }
+
+        // Отображение выбранного курса
+        function displaySelectedCourse(courseName) {
+            const selectedCourseInfo = document.getElementById('selectedCourseInfo');
+            const courseNameDisplay = document.getElementById('courseNameDisplay');
+            
+            if (selectedCourseInfo && courseNameDisplay) {
+                courseNameDisplay.textContent = courseName;
+                selectedCourseInfo.style.display = 'block';
+                
+                // Автоматически заполняем поле выбора курса
+                const courseSelect = document.getElementById('courseSelect');
+                const customInput = document.getElementById('customCourseName');
+                
+                // Проверяем, есть ли курс в списке
+                let courseExists = false;
+                for (let i = 0; i < courseSelect.options.length; i++) {
+                    if (courseSelect.options[i].value === courseName) {
+                        courseSelect.value = courseName;
+                        customInput.disabled = true;
+                        customInput.value = '';
+                        courseExists = true;
+                        break;
+                    }
+                }
+                
+                if (!courseExists) {
+                    // Если курса нет в списке, заполняем кастомное поле
+                    customInput.value = courseName;
+                    courseSelect.disabled = true;
+                    courseSelect.value = '';
+                }
+            }
+        }
+
+        // Скрытие блока выбранного курса
+        function hideSelectedCourse() {
+            const selectedCourseInfo = document.getElementById('selectedCourseInfo');
+            if (selectedCourseInfo) {
+                selectedCourseInfo.style.display = 'none';
+            }
+        }
+
+        // Обработчик отправки заявки
+        async function handleApplicationSubmit(e) {
             e.preventDefault();
             
             const courseSelect = document.getElementById('courseSelect');
             const customCourse = document.getElementById('customCourseName');
+            const startDate = document.getElementById('startDate');
+            const paymentMethod = document.getElementById('paymentMethod');
             
             let courseName = '';
             if (courseSelect.value) {
@@ -98,48 +356,106 @@
             } else if (customCourse.value) {
                 courseName = customCourse.value;
             } else {
-                document.getElementById('applicationMessage').textContent = 'Выберите или введите название курса';
-                document.getElementById('applicationMessage').className = 'error';
+                showApplicationMessage('Выберите или введите название курса', 'error');
+                return;
+            }
+            
+            if (!startDate.value) {
+                showApplicationMessage('Укажите дату начала обучения', 'error');
+                return;
+            }
+            
+            if (!paymentMethod.value) {
+                showApplicationMessage('Выберите способ оплаты', 'error');
                 return;
             }
             
             const formData = {
                 course_name: courseName,
-                start_date: document.getElementById('startDate').value,
-                payment_method: document.getElementById('paymentMethod').value
+                start_date: startDate.value,
+                payment_method: paymentMethod.value
             };
             
             try {
-                const response = await fetch(`${API_BASE}/applications.php`, {
+                showApplicationMessage('Отправка заявки...', 'info');
+                
+                const result = await apiFetch('applications.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(formData)
                 });
                 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    document.getElementById('applicationMessage').textContent = data.message;
-                    document.getElementById('applicationMessage').className = 'success';
-                    document.getElementById('newApplicationForm').reset();
+                if (result.success) {
+                    showApplicationMessage('Заявка успешно создана! Перенаправление в личный кабинет...', 'success');
                     
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
-                    document.getElementById('applicationMessage').textContent = data.error;
-                    document.getElementById('applicationMessage').className = 'error';
+                    showApplicationMessage(result.error || 'Ошибка при создании заявки', 'error');
                 }
             } catch (error) {
-                document.getElementById('applicationMessage').textContent = 'Ошибка соединения';
-                document.getElementById('applicationMessage').className = 'error';
+                console.error('Ошибка отправки заявки:', error);
+                showApplicationMessage('Ошибка соединения с сервером', 'error');
             }
-        });
+        }
 
-        // Установка минимальной даты (сегодня)
-        document.getElementById('startDate').min = new Date().toISOString().split('T')[0];
+        // Показать сообщение в форме
+        function showApplicationMessage(text, type) {
+            const messageEl = document.getElementById('applicationMessage');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = type === 'success' ? 'text-success' : 
+                                    type === 'info' ? 'text-muted' : 'text-error';
+            }
+        }
+
+        // Проверка авторизации для шапки
+        function checkAuth() {
+            const userToken = localStorage.getItem('userToken');
+            const authButton = document.getElementById('authButton');
+            const headerUserInfo = document.getElementById('headerUserInfo');
+            
+            if (userToken) {
+                const userName = localStorage.getItem('userName');
+                const userAvatar = localStorage.getItem('userAvatar');
+                
+                if (authButton) authButton.style.display = 'none';
+                if (headerUserInfo) {
+                    headerUserInfo.style.display = 'flex';
+                    const userNameEl = document.getElementById('userName');
+                    if (userNameEl) userNameEl.textContent = userName;
+                    
+                    // Обновление аватара
+                    const headerAvatar = document.getElementById('headerAvatar');
+                    const headerAvatarPlaceholder = document.querySelector('#headerUserInfo .header-avatar-placeholder');
+                    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
+                    
+                    if (userAvatar) {
+                        if (headerAvatar) {
+                            const avatarPath = userAvatar.startsWith('http') ? userAvatar : 
+                                            `${API_BASE.replace('/api', '')}/${userAvatar}`;
+                            headerAvatar.src = avatarPath;
+                            headerAvatar.style.display = 'block';
+                        }
+                        if (headerAvatarPlaceholder) {
+                            headerAvatarPlaceholder.style.display = 'none';
+                        }
+                    } else {
+                        if (headerAvatar) {
+                            headerAvatar.style.display = 'none';
+                        }
+                        if (headerAvatarPlaceholder && headerAvatarInitial) {
+                            const initial = userName ? userName.charAt(0).toUpperCase() : 'П';
+                            headerAvatarInitial.textContent = initial;
+                            headerAvatarPlaceholder.style.display = 'flex';
+                        }
+                    }
+                }
+            } else {
+                if (authButton) authButton.style.display = 'block';
+                if (headerUserInfo) headerUserInfo.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>

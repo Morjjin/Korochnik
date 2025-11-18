@@ -210,22 +210,15 @@ async function handleLogin(e) {
     const login = document.getElementById('login').value;
     const password = document.getElementById('password').value;
     
-    // Исключение для администратора: пропускаем валидацию
-    if (login === 'Admin' && password === 'KorokNET') {
-        // Администратор может иметь "невалидный" логин/пароль по регулярным выражениям
-        // но в БД он хранится с правильным хешем
-    } else {
-        // Валидация формы входа для обычных пользователей
-        if (!validateFormFields(false)) {
-            console.log('Форма входа невалидна');
-            return;
-        }
-    }
+    // Получаем текущую страницу для редиректа
+    const currentPage = window.location.pathname.split('/').pop();
+    const redirectTo = currentPage === 'courses.html' ? 'courses' : '';
     
     const formData = {
         login: login,
         password: password,
-        action: 'login'
+        action: 'login',
+        redirect_to: redirectTo
     };
     
     console.log('handleLogin: отправляю запрос', formData);
@@ -253,12 +246,21 @@ async function handleLogin(e) {
         // Закрываем модальное окно
         hideAuthModal();
         
-        // Если на главной странице - обновляем интерфейс
+        // Обрабатываем редирект
+        if (result.data.redirect_to === 'courses') {
+            // Если мы уже на странице курсов - просто обновляем интерфейс
+            if (currentPage === 'courses.html') {
+                window.location.reload();
+            } else {
+                window.location.href = 'courses.html';
+            }
+            return;
+        }
+        
+        // Стандартная логика редиректа
         const currentPage = window.location.pathname.split('/').pop();
         if (currentPage === 'index.html' || currentPage === '') {
-            // Обновляем шапку
             checkAuth();
-            // Не перенаправляем, остаемся на главной
             return;
         }
         
@@ -1038,3 +1040,211 @@ function renderReviews(reviews) {
     container.innerHTML = '';
     container.appendChild(fragment);
 }
+
+// Функция для экранирования HTML (если еще нет)
+function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Функции для работы с модальными окнами (если еще нет)
+function showAuthModal(showRegisterForm = false) {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+        if (showRegisterForm) {
+            showRegister();
+        } else {
+            showLogin();
+        }
+        modal.classList.add('active');
+    }
+}
+
+function hideAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function showLogin() {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const modalTitle = document.getElementById('authModalTitle');
+    
+    if (loginForm) loginForm.classList.add('active');
+    if (registerForm) registerForm.classList.remove('active');
+    if (modalTitle) modalTitle.textContent = 'Вход в систему';
+}
+
+function showRegister() {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const modalTitle = document.getElementById('authModalTitle');
+    
+    if (loginForm) loginForm.classList.remove('active');
+    if (registerForm) registerForm.classList.add('active');
+    if (modalTitle) modalTitle.textContent = 'Регистрация';
+}
+async function handleRegisterWithRedirect(e) {
+    e.preventDefault();
+    
+    // Валидация формы регистрации
+    if (!validateFormFields(true)) {
+        console.log('Форма регистрации невалидна');
+        return;
+    }
+    
+    const formData = {
+        login: document.getElementById('regLogin').value,
+        password: document.getElementById('regPassword').value,
+        full_name: document.getElementById('fullName').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('regEmail').value,
+        action: 'register',
+        redirect_to: 'courses' // Всегда редиректим на курсы после регистрации
+    };
+    
+    // Проверка телефона
+    if (formData.phone && !validatePhone(formData.phone)) {
+        showError('phoneErrorMsg', 'Телефон должен быть в формате 8(XXX)XXX-XX-XX');
+        return;
+    }
+    
+    const result = await apiFetch('auth.php', {
+        method: 'POST',
+        body: JSON.stringify(formData)
+    });
+    
+    if (result.success) {
+        showSuccess('registerSuccess', 'Регистрация прошла успешно! Выполняется вход...');
+        
+        // Автоматически входим после регистрации
+        setTimeout(async () => {
+            const loginFormData = {
+                login: formData.login,
+                password: formData.password,
+                action: 'login',
+                redirect_to: 'courses'
+            };
+            
+            const loginResult = await apiFetch('auth.php', {
+                method: 'POST',
+                body: JSON.stringify(loginFormData)
+            });
+            
+            if (loginResult.success) {
+                // Сохраняем данные пользователя
+                localStorage.setItem('userToken', 'authenticated');
+                localStorage.setItem('userName', loginResult.data.full_name || formData.login);
+                localStorage.setItem('isAdmin', loginResult.data.is_admin ? 'true' : 'false');
+                if (loginResult.data.avatar) {
+                    localStorage.setItem('userAvatar', loginResult.data.avatar);
+                } else {
+                    localStorage.removeItem('userAvatar');
+                }
+                
+                // Закрываем модальное окно
+                hideAuthModal();
+                
+                // Перенаправляем на страницу курсов
+                window.location.href = 'courses.html';
+            } else {
+                showError('registerError', 'Регистрация прошла успешно, но не удалось войти. Пожалуйста, войдите вручную.');
+                showLogin();
+            }
+        }, 1000);
+    } else {
+        showError('regPasswordError', result.error);
+    }
+}
+// Загрузка популярных курсов
+async function loadPopularCourses() {
+    try {
+        const result = await apiFetch('popular_courses.php');
+        
+        if (result.success) {
+            displayPopularCourses(result.data);
+        } else {
+            showPopularCoursesError();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки популярных курсов:', error);
+        showPopularCoursesError();
+    }
+}
+
+// Отображение популярных курсов
+function displayPopularCourses(courses) {
+    const container = document.getElementById('popularCoursesContainer');
+    
+    if (!courses || courses.length === 0) {
+        container.innerHTML = `
+            <div class="empty-popular-courses">
+                <p class="text-muted">Популярные курсы появятся скоро</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = courses.map(course => `
+        <div class="course-preview-card" onclick="openCourseDetails('${course.name}')">
+            <div class="course-preview-header">
+                <h3>${escapeHtml(course.name)}</h3>
+                <div class="popular-badge">
+                    <span class="popular-icon">🔥</span>
+                    <span class="popular-count">${course.application_count || 0}</span>
+                </div>
+            </div>
+            <p class="course-preview-description">${escapeHtml(course.description || 'Описание отсутствует')}</p>
+            <div class="course-preview-footer">
+                <div class="course-preview-meta">
+                    <span class="course-duration">${course.duration || 'Не указано'}</span>
+                    <span class="course-price">${formatCoursePrice(course.price)}</span>
+                </div>
+                <button class="btn-course-details">Подробнее →</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Форматирование цены курса
+function formatCoursePrice(price) {
+    if (!price || price === '0.00') return 'Бесплатно';
+    return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+}
+
+// Обработка ошибки загрузки популярных курсов
+function showPopularCoursesError() {
+    const container = document.getElementById('popularCoursesContainer');
+    container.innerHTML = `
+        <div class="empty-popular-courses">
+            <p class="text-muted">Не удалось загрузить популярные курсы</p>
+            <button class="btn btn-secondary btn-sm mt-2" onclick="loadPopularCourses()">
+                Попробовать снова
+            </button>
+        </div>
+    `;
+}
+
+// Открытие деталей курса (переход на страницу курсов)
+function openCourseDetails(courseName) {
+    // Кодируем название курса для URL
+    const encodedCourseName = encodeURIComponent(courseName);
+    // Перенаправляем на страницу курсов с параметром
+    window.location.href = `courses.html?course=${encodedCourseName}`;
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, есть ли на странице контейнер популярных курсов
+    if (document.getElementById('popularCoursesContainer')) {
+        loadPopularCourses();
+    }
+});
