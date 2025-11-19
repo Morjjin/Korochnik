@@ -87,10 +87,10 @@ if ($action == 'register') {
     if ($user->create()) {
         // Автоматически входим после регистрации
         $user->login = $data->login;
-        $user->password = $data->password; // исходный пароль для проверки
+        $inputPassword = $data->password; // Сохраняем исходный пароль
         
         if ($user->loginExists()) {
-            if (password_verify($user->password, $user->password)) {
+            if (password_verify($inputPassword, $user->password)) {
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['login'] = $user->login;
                 $_SESSION['is_admin'] = $user->is_admin;
@@ -124,10 +124,10 @@ if ($action == 'register') {
     }
 
     $user->login = $data->login;
-    $user->password = $data->password;
+    $inputPassword = $data->password; // Сохраняем исходный пароль
 
     if ($user->loginExists()) {
-        if (password_verify($user->password, $user->password)) {
+        if (password_verify($inputPassword, $user->password)) {
             $_SESSION['user_id'] = $user->id;
             $_SESSION['login'] = $user->login;
             $_SESSION['is_admin'] = $user->is_admin;

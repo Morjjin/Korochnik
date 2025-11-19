@@ -183,11 +183,29 @@
             </div>
         </section>
         
-        <!-- Отзывы студентов (перемещено сюда) -->
+        <!-- Отзывы студентов -->
         <section id="reviews" class="card reviews-section">
             <h2 class="text-center mb-3">Отзывы студентов</h2>
-            <div id="reviewsList" class="reviews-list">
-                <div class="loading-state">Загрузка отзывов...</div>
+            
+            <div class="reviews-slider-container">
+                <div class="reviews-slider">
+                    <div class="reviews-track" id="reviewsTrack">
+                        <!-- Слайды будут добавляться через JavaScript -->
+                    </div>
+                    
+                    <!-- Кнопки навигации -->
+                    <button class="review-slider-btn review-slider-btn-prev" onclick="changeReviewSlide(-1)" aria-label="Предыдущий отзыв">
+                        ‹
+                    </button>
+                    <button class="review-slider-btn review-slider-btn-next" onclick="changeReviewSlide(1)" aria-label="Следующий отзыв">
+                        ›
+                    </button>
+                </div>
+                
+                <!-- Индикаторы -->
+                <div class="review-slider-dots" id="reviewDots">
+                    <!-- Точки будут добавляться через JavaScript -->
+                </div>
             </div>
         </section>
     </main>
@@ -364,24 +382,26 @@
 
     <script src="app.js"></script>
     <script>
-        // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Инициализация слайдера
-            if (document.getElementById('imageSlider')) {
-                initSlider();
-            }
+        // Инициализация слайдера изображений
+        if (document.getElementById('imageSlider')) {
+            initSlider();
+        }
+        
+        // Загрузка популярных курсов
+        if (typeof loadPopularCourses === 'function') {
+            loadPopularCourses();
+        }
+        
+        // Инициализация слайдера отзывов
+        if (document.getElementById('reviewsTrack')) {
+            const REVIEWS_LIMIT = 6; // Можно показывать больше отзывов в слайдере
+            initReviews(REVIEWS_LIMIT);
             
-            // Загрузка популярных курсов
-            if (typeof loadPopularCourses === 'function') {
-                loadPopularCourses();
-            }
-            
-            // Загрузка отзывов
-            if (document.getElementById('reviewsList')) {
-                const REVIEWS_LIMIT = 5;
-                initReviews(REVIEWS_LIMIT);
-            }
-        });
+            // Фоновое обновление кеша
+            setInterval(() => backgroundUpdateReviews(REVIEWS_LIMIT), 300000);
+        }
+    });
     </script>
 </body>
 </html>
