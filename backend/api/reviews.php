@@ -19,8 +19,8 @@ $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 5;
 if ($limit <= 0) $limit = 5;
 
 try {
-    // Выбираем последние отзывы (feedback) из заявок, где feedback не пустой
-    $query = "SELECT a.feedback, a.created_at, u.full_name, u.id as user_id, u.avatar
+    // Обновленный запрос с информацией о курсе
+    $query = "SELECT a.feedback, a.created_at, u.full_name, u.id as user_id, u.avatar, a.course_name
               FROM applications a
               LEFT JOIN users u ON a.user_id = u.id
               WHERE a.feedback IS NOT NULL AND a.feedback != ''
@@ -37,6 +37,7 @@ try {
             'user_name' => $row['full_name'] ? $row['full_name'] : 'Пользователь',
             'avatar' => $row['avatar'] ? $row['avatar'] : null,
             'feedback' => $row['feedback'],
+            'course_name' => $row['course_name'],
             'created_at' => $row['created_at']
         );
     }
@@ -46,5 +47,4 @@ try {
     http_response_code(500);
     echo json_encode(array('error' => 'Ошибка сервера')); 
 }
-
 ?>

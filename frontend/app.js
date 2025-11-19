@@ -914,24 +914,24 @@ async function initReviews(limit = 5) {
     const container = document.getElementById('reviewsList');
     if (!container) return;
 
-    // Показать спиннер
-    container.innerHTML = '<div class="loading-state">Загрузка отзывов...</div>';
+    // Показываем спиннер
+    container.innerHTML = '<div class="reviews-loading">Загрузка отзывов...</div>';
 
     try {
         const cached = getCachedReviews();
         const now = Date.now();
         if (cached && (now - cached.ts) < REVIEWS_CACHE_TTL) {
-            renderReviews(cached.data);
-            // Запуск фоновой загрузки (обновит кеш, но не DOM)
+            initReviewSlider(cached.data);
+            // Фоновая загрузка для обновления кеша
             backgroundUpdateReviews(limit);
             return;
         }
 
-        // Нет актуального кеша — загрузим с сервера и отобразим
+        // Загрузка с сервера
         const result = await apiFetch(`reviews.php?limit=${limit}`);
         if (result.success) {
             const reviews = result.data || [];
-            renderReviews(reviews);
+            initReviewSlider(reviews);
             saveReviewsToCache(reviews);
         } else {
             container.innerHTML = `<div class="error-state">Не удалось загрузить отзывы. Попробуйте позже.</div>`;
@@ -1246,5 +1246,224 @@ document.addEventListener('DOMContentLoaded', function() {
     // Проверяем, есть ли на странице контейнер популярных курсов
     if (document.getElementById('popularCoursesContainer')) {
         loadPopularCourses();
+    }
+});
+// Добавьте этот код в КОНЕЦ файла app.js, после всего остального кода
+
+// ===== СЛАЙДЕР ОТЗЫВОВ =====
+let currentReviewSlide = 0;
+let reviewSlides = [];
+let reviewSlideInterval;
+
+// Инициализация слайдера отзывов
+function initReviewSlider(reviews) {
+    reviewSlides = reviews;
+    currentReviewSlide = 0;
+    
+    renderReviewSlides();
+    updateReviewSlider();
+    
+    // Автоматическое пролистывание каждые 5 секунд
+    if (reviews.length > 1) {
+        startReviewSlider();
+    }
+    
+    // Остановка при наведении
+    const sliderContainer = document.querySelector('.reviews-slider-container');
+    if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopReviewSlider);
+        sliderContainer.addEventListener('mouseleave', () => {
+            if (reviewSlides.length > 1) {
+                startReviewSlider();
+            }
+        });
+    }
+}
+
+// Рендер слайдов
+function renderReviewSlides() {
+    const track = document.getElementById('reviewsTrack');
+    const dotsContainer = document.getElementById('reviewDots');
+    
+    if (!track || !dotsContainer) return;
+    
+    if (!reviewSlides || reviewSlides.length === 0) {
+        track.innerHTML = `
+            <div class="review-slide">
+                <div class="reviews-empty-state">
+                    <h3>Пока нет отзывов</h3>
+                    <p>Станьте первым, кто оставит отзыв о курсе!</p>
+                </div>
+            </div>
+        `;
+        dotsContainer.innerHTML = '';
+        return;
+    }
+    
+    // Очищаем контейнеры
+    track.innerHTML = '';
+    dotsContainer.innerHTML = '';
+    
+    // Создаем слайды
+    reviewSlides.forEach((review, index) => {
+        const slide = document.createElement('div');
+        slide.className = `review-slide ${index === 0 ? 'active' : ''}`;
+        
+        const formattedDate = review.created_at ? 
+            new Date(review.created_at).toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }) : '';
+        
+        const userInitial = (review.user_name || 'П').charAt(0).toUpperCase();
+        const avatarUrl = review.avatar ? 
+            (review.avatar.startsWith('http') ? review.avatar : `${API_BASE.replace('/api', '')}/${review.avatar}`) : 
+            '';
+        
+        slide.innerHTML = `
+            <div class="review-slide-card">
+                <div class="review-course-badge">
+                    ${escapeHtml(review.course_name || 'Курс')}
+                </div>
+                
+                <div class="review-header">
+                    <div class="review-avatar-container">
+                        ${avatarUrl ? 
+                            `<img src="${avatarUrl}" alt="Аватар" class="review-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
+                            ''
+                        }
+                        <div class="review-avatar-fallback" style="${avatarUrl ? 'display:none' : 'display:flex'}">
+                            ${userInitial}
+                        </div>
+                    </div>
+                    
+                    <div class="review-user-info">
+                        <div class="review-user-name">${escapeHtml(review.user_name || 'Пользователь')}</div>
+                        <div class="review-date">${formattedDate}</div>
+                    </div>
+                </div>
+                
+                <div class="review-content">
+                    <div class="review-quote">"</div>
+                    <p class="review-text">${escapeHtml(review.feedback || '')}</p>
+                </div>
+            </div>
+        `;
+        
+        track.appendChild(slide);
+        
+        // Создаем точки-индикаторы
+        const dot = document.createElement('button');
+        dot.className = `review-dot ${index === 0 ? 'active' : ''}`;
+        dot.setAttribute('aria-label', `Перейти к отзыву ${index + 1}`);
+        dot.addEventListener('click', () => goToReviewSlide(index));
+        dotsContainer.appendChild(dot);
+    });
+}
+
+// Обновление позиции слайдера
+function updateReviewSlider() {
+    const track = document.getElementById('reviewsTrack');
+    if (track) {
+        track.style.transform = `translateX(-${currentReviewSlide * 100}%)`;
+    }
+}
+
+// Смена слайда
+function changeReviewSlide(direction) {
+    if (reviewSlides.length <= 1) return;
+    
+    const newIndex = (currentReviewSlide + direction + reviewSlides.length) % reviewSlides.length;
+    goToReviewSlide(newIndex);
+}
+
+// Переход к конкретному слайду
+function goToReviewSlide(index) {
+    if (index < 0 || index >= reviewSlides.length || index === currentReviewSlide) return;
+    
+    const slides = document.querySelectorAll('.review-slide');
+    const dots = document.querySelectorAll('.review-dot');
+    
+    // Обновляем активный слайд
+    slides[currentReviewSlide]?.classList.remove('active');
+    slides[index].classList.add('active');
+    
+    // Обновляем точки
+    dots[currentReviewSlide]?.classList.remove('active');
+    dots[index].classList.add('active');
+    
+    currentReviewSlide = index;
+    updateReviewSlider();
+    
+    // Сбрасываем таймер автоматической смены
+    if (reviewSlides.length > 1) {
+        stopReviewSlider();
+        startReviewSlider();
+    }
+}
+
+// Автоматическое пролистывание
+function startReviewSlider() {
+    if (reviewSlides.length <= 1) return;
+    
+    stopReviewSlider(); // Останавливаем предыдущий интервал
+    
+    reviewSlideInterval = setInterval(() => {
+        changeReviewSlide(1);
+    }, 5000); // Смена каждые 5 секунд
+}
+
+function stopReviewSlider() {
+    if (reviewSlideInterval) {
+        clearInterval(reviewSlideInterval);
+        reviewSlideInterval = null;
+    }
+}
+
+// Обновляем функцию initReviews для использования слайдера
+async function initReviews(limit = 5) {
+    const container = document.getElementById('reviewsList');
+    if (!container) return;
+
+    // Показываем спиннер
+    container.innerHTML = '<div class="reviews-loading">Загрузка отзывов...</div>';
+
+    try {
+        const cached = getCachedReviews();
+        const now = Date.now();
+        if (cached && (now - cached.ts) < REVIEWS_CACHE_TTL) {
+            initReviewSlider(cached.data);
+            // Фоновая загрузка для обновления кеша
+            backgroundUpdateReviews(limit);
+            return;
+        }
+
+        // Загрузка с сервера
+        const result = await apiFetch(`reviews.php?limit=${limit}`);
+        if (result.success) {
+            const reviews = result.data || [];
+            initReviewSlider(reviews);
+            saveReviewsToCache(reviews);
+        } else {
+            container.innerHTML = `<div class="error-state">Не удалось загрузить отзывы. Попробуйте позже.</div>`;
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = `<div class="error-state">Ошибка загрузки отзывов</div>`;
+    }
+}
+
+// Обновляем обработчик DOMContentLoaded в конце файла
+document.addEventListener('DOMContentLoaded', function() {
+    // ... существующий код ...
+    
+    // Обновляем инициализацию отзывов
+    if (document.getElementById('reviewsTrack')) {
+        const REVIEWS_LIMIT = 6;
+        initReviews(REVIEWS_LIMIT);
+        
+        // Фоновое обновление кеша
+        setInterval(() => backgroundUpdateReviews(REVIEWS_LIMIT), 300000);
     }
 });
