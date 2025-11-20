@@ -2446,7 +2446,7 @@ textarea.form-input {
         font-size: 1.1rem;
     }
 }
-/* ===== СТИЛИ ДЛЯ СЛАЙДЕРА ОТЗЫВОВ ===== */
+/* ===== ИСПРАВЛЕННЫЙ CSS ДЛЯ СЛАЙДЕРА ОТЗЫВОВ ===== */
 
 .reviews-slider-container {
     position: relative;
@@ -2461,6 +2461,7 @@ textarea.form-input {
     border-radius: 16px;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     padding: 2rem 0;
+    min-height: 300px;
 }
 
 .reviews-track {
@@ -2473,7 +2474,19 @@ textarea.form-input {
     flex: 0 0 100%;
     padding: 0 2rem;
     box-sizing: border-box;
+    min-width: 100%;
+    /* УБРАТЬ display: none - ВСЕ СЛАЙДЫ ДОЛЖНЫ БЫТЬ ВИДИМЫ В ТРЕКЕ */
 }
+
+/* Активный слайд */
+.review-slide.active {
+    /* Ничего особенного - он просто первый в очереди */
+}
+
+/* УБРАТЬ ЭТО ПРАВИЛО - оно скрывает все неактивные слайды */
+/* .review-slide:not(.active) {
+    display: none;
+} */
 
 .review-slide-card {
     background: white;
@@ -2485,14 +2498,9 @@ textarea.form-input {
     max-width: 600px;
     margin: 0 auto;
     position: relative;
-    transition: all 0.3s ease;
 }
 
-.review-slide-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-}
-
+/* Остальные стили остаются без изменений */
 .review-course-badge {
     position: absolute;
     top: -12px;
@@ -2614,16 +2622,12 @@ textarea.form-input {
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
-.review-slider-btn:active {
-    transform: translateY(-50%) scale(0.95);
-}
-
 .review-slider-btn-prev {
-    left: -25px;
+    left: 10px;
 }
 
 .review-slider-btn-next {
-    right: -25px;
+    right: 10px; /* было: right: -25px */
 }
 
 /* Индикаторы */
@@ -2655,31 +2659,18 @@ textarea.form-input {
     transform: scale(1.1);
 }
 
-/* Анимации */
-@keyframes slideInReview {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.review-slide.active .review-slide-card {
-    animation: slideInReview 0.6s ease-out;
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
     .reviews-slider-container {
         padding: 0 1rem;
     }
     
+    .review-slide {
+        padding: 0 1rem;
+    }
+    
     .review-slide-card {
         padding: 2rem 1.5rem;
-        margin: 0 0.5rem;
     }
     
     .review-header {
@@ -2740,26 +2731,4 @@ textarea.form-input {
     .review-slider-btn-next {
         right: -10px;
     }
-}
-
-/* Состояния для пустых отзывов */
-.reviews-empty-state {
-    text-align: center;
-    padding: 3rem 2rem;
-    color: var(--gray);
-}
-
-.reviews-empty-state h3 {
-    color: var(--gray);
-    margin-bottom: 1rem;
-    font-weight: 500;
-}
-
-/* Индикатор загрузки для отзывов */
-.reviews-loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    color: var(--gray);
 }
