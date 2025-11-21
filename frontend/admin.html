@@ -30,6 +30,8 @@
 
     <!-- Основной контент -->
     <main class="main-container">
+
+        <!-- Остальные разделы остаются без изменений -->
         <div class="card">
             <h2 class="mb-2">Панель администратора</h2>
             <p class="text-muted mb-3">Управление заявками пользователей</p>
@@ -56,11 +58,90 @@
                     <p class="text-muted">Загрузка заявок...</p>
                 </div>
             </div>
+        </div>    
+
+        <!-- Форма добавления курса -->
+        <div class="card">
+            <h2 class="mb-2">Добавить новый курс</h2>
+            <p class="text-muted mb-3">Создание нового учебного курса</p>
             
-            <!-- Пагинация будет добавлена динамически -->
+            <form id="addCourseForm">
+                <div class="form-group">
+                    <label for="courseName" class="form-label">Название курса *</label>
+                    <input type="text" class="form-input" id="courseName" name="name" required 
+                           placeholder="Введите название курса">
+                    <div id="courseNameError" class="text-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courseDescription" class="form-label">Описание курса</label>
+                    <textarea class="form-input" id="courseDescription" name="description" rows="3" 
+                              placeholder="Введите описание курса"></textarea>
+                    <div id="courseDescriptionError" class="text-error"></div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseDuration" class="form-label">Продолжительность</label>
+                        <input type="text" class="form-input" id="courseDuration" name="duration" 
+                               placeholder="Например: 40 часов">
+                        <div id="courseDurationError" class="text-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coursePrice" class="form-label">Цена (руб.)</label>
+                        <input type="number" class="form-input" id="coursePrice" name="price" 
+                               placeholder="0.00" step="0.01" min="0">
+                        <div id="coursePriceError" class="text-error"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        Добавить курс
+                    </button>
+                    <div id="courseMessage" class="text-center mt-2"></div>
+                </div>
+            </form>
         </div>
 
-        <!-- Обращения в поддержку -->
+        <!-- Управление существующими курсами - ОПТИМИЗИРОВАНО -->
+        <div class="card">
+            <div class="courses-management-header">
+                <div>
+                    <h2 class="mb-2">Управление курсами</h2>
+                    <p class="text-muted mb-3">Список всех учебных курсов</p>
+                </div>
+                <div class="courses-management-controls">
+                    <div class="search-box">
+                        <input type="text" id="courseSearch" class="search-input" 
+                               placeholder="Поиск курсов..." oninput="filterCourses()">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadAllCourses()" title="Обновить список">
+                        ↻
+                    </button>
+                </div>
+            </div>
+
+            <div class="courses-stats">
+                <div class="stat-badge">
+                    <span class="stat-number" id="totalCourses">0</span>
+                    <span class="stat-label">Всего курсов</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-number" id="totalApplications">0</span>
+                    <span class="stat-label">Всего заявок</span>
+                </div>
+            </div>
+
+            <div id="coursesList" class="courses-table-container">
+                <div class="empty-state">
+                    <p class="text-muted">Загрузка курсов...</p>
+                </div>
+            </div>
+        </div>  
+
         <div class="card">
             <h2 class="mb-2">Обращения в поддержку</h2>
             <p class="text-muted mb-3">Управление обращениями пользователей</p>
@@ -91,7 +172,7 @@
         </div>
     </main>
 
-    <!-- Модальное окно ответа на обращение -->
+    <!-- Модальные окна и футер остаются без изменений -->
     <div class="modal" id="supportResponseModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -128,7 +209,6 @@
         </div>
     </div>
 
-    <!-- Подвал -->
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-section">
