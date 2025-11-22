@@ -2346,6 +2346,9 @@ textarea.form-input {
     margin-bottom: 1.5rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    -moz-line-clamp: 3;
+    -ms-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2477,16 +2480,6 @@ textarea.form-input {
     min-width: 100%;
     /* УБРАТЬ display: none - ВСЕ СЛАЙДЫ ДОЛЖНЫ БЫТЬ ВИДИМЫ В ТРЕКЕ */
 }
-
-/* Активный слайд */
-.review-slide.active {
-    /* Ничего особенного - он просто первый в очереди */
-}
-
-/* УБРАТЬ ЭТО ПРАВИЛО - оно скрывает все неактивные слайды */
-/* .review-slide:not(.active) {
-    display: none;
-} */
 
 .review-slide-card {
     background: white;
