@@ -1,12 +1,8 @@
-// admin.js - функционал панели администратора
-// 
-// ВАЖНО: API_BASE определяется в app.js
-// Убедитесь, что app.js подключен перед admin.js в HTML
-// Если нужно изменить путь к API, измените его в app.js
-
 let currentPage = 1;
 const itemsPerPage = 6;
 let allApplications = [];
+let allCourses = [];
+let filteredCourses = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     // Проверяем авторизацию администратора
@@ -17,11 +13,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadApplications();
     loadSupportTickets();
+    loadAllCourses();
     
     // Обработчик формы ответа на обращение
     const supportResponseForm = document.getElementById('supportResponseForm');
     if (supportResponseForm) {
         supportResponseForm.addEventListener('submit', handleSupportResponse);
+    }
+    
+    // Обработчик формы добавления курса
+    const addCourseForm = document.getElementById('addCourseForm');
+    if (addCourseForm) {
+        addCourseForm.addEventListener('submit', handleAddCourse);
     }
     
     // Закрытие модального окна по клику на фон
@@ -35,6 +38,293 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Загрузка всех курсов для управления
+async function loadAllCourses() {
+    try {
+        const coursesList = document.getElementById('coursesList');
+        if (coursesList) {
+            coursesList.innerHTML = '<div class="empty-state"><p class="text-muted">Загрузка курсов...</p></div>';
+        }
+        
+        const result = await apiFetch('courses.php');
+        
+        if (result.success) {
+            allCourses = result.data;
+            filteredCourses = [...allCourses];
+            displayCoursesList(filteredCourses);
+            updateCoursesStats();
+        } else {
+            throw new Error(result.error || 'Ошибка загрузки курсов');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки курсов:', error);
+        const coursesList = document.getElementById('coursesList');
+        if (coursesList) {
+            coursesList.innerHTML = `
+                <div class="error-state">
+                    <p class="text-error">${escapeHtml(error.message)}</p>
+                    <button class="btn btn-primary mt-2" onclick="loadAllCourses()">
+                        Попробовать снова
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Фильтрация курсов по поисковому запросу
+function filterCourses() {
+    const searchTerm = document.getElementById('courseSearch').value.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        filteredCourses = [...allCourses];
+    } else {
+        filteredCourses = allCourses.filter(course => 
+            course.name.toLowerCase().includes(searchTerm) ||
+            (course.description && course.description.toLowerCase().includes(searchTerm)) ||
+            (course.duration && course.duration.toLowerCase().includes(searchTerm))
+        );
+    }
+    
+    displayCoursesList(filteredCourses);
+    updateCoursesStats();
+}
+
+// Обновление статистики курсов
+function updateCoursesStats() {
+    const totalCourses = document.getElementById('totalCourses');
+    const totalApplications = document.getElementById('totalApplications');
+    
+    if (totalCourses) {
+        totalCourses.textContent = filteredCourses.length;
+    }
+    
+    if (totalApplications) {
+        const totalApps = filteredCourses.reduce((sum, course) => sum + (course.application_count || 0), 0);
+        totalApplications.textContent = totalApps;
+    }
+}
+
+// Отображение списка курсов в компактном табличном виде
+function displayCoursesList(courses) {
+    const coursesList = document.getElementById('coursesList');
+    if (!coursesList) return;
+    
+    if (!courses || courses.length === 0) {
+        const searchTerm = document.getElementById('courseSearch').value;
+        if (searchTerm) {
+            coursesList.innerHTML = `
+                <div class="empty-state">
+                    <h3 class="text-muted mb-2">Курсы не найдены</h3>
+                    <p class="text-muted">Попробуйте изменить поисковый запрос</p>
+                </div>
+            `;
+        } else {
+            coursesList.innerHTML = `
+                <div class="empty-state">
+                    <h3 class="text-muted mb-2">Курсы не найдены</h3>
+                    <p class="text-muted">Добавьте первый курс используя форму выше</p>
+                </div>
+            `;
+        }
+        return;
+    }
+    
+    coursesList.innerHTML = `
+        <div class="courses-table">
+            <div class="table-header">
+                <div class="col-name">Название курса</div>
+                <div class="col-duration">Продолжительность</div>
+                <div class="col-price">Цена</div>
+                <div class="col-applications">Заявок</div>
+                <div class="col-actions">Действия</div>
+            </div>
+            <div class="table-body">
+                ${courses.map(course => `
+                    <div class="table-row">
+                        <div class="col-name">
+                            <div class="course-name">${escapeHtml(course.name)}</div>
+                            ${course.description ? `<div class="course-description">${escapeHtml(course.description.substring(0, 60))}${course.description.length > 60 ? '...' : ''}</div>` : ''}
+                        </div>
+                        <div class="col-duration">${escapeHtml(course.duration || '—')}</div>
+                        <div class="col-price">${formatCoursePrice(course.price)}</div>
+                        <div class="col-applications">
+                            <span class="applications-count ${course.application_count > 0 ? 'has-applications' : ''}">
+                                ${course.application_count || 0}
+                            </span>
+                        </div>
+                        <div class="col-actions">
+                            <button class="btn btn-danger btn-sm btn-icon" 
+                                    onclick="deleteCourse(${course.id})" 
+                                    title="Удалить курс"
+                                    ${course.application_count > 0 ? 'disabled' : ''}>
+                                🗑️
+                            </button>
+                            ${course.application_count > 0 ? `
+                                <div class="tooltip">Нельзя удалить: есть заявки</div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Удаление курса
+async function deleteCourse(courseId) {
+    const course = allCourses.find(c => c.id === courseId);
+    
+    if (course && course.application_count > 0) {
+        showNotification('Невозможно удалить курс: есть активные заявки', 'error');
+        return;
+    }
+    
+    if (!confirm('Вы уверены, что хотите удалить этот курс? Это действие нельзя отменить.')) {
+        return;
+    }
+    
+    try {
+        const result = await apiFetch(`courses.php/${courseId}`, {
+            method: 'DELETE'
+        });
+        
+        if (result.success) {
+            showNotification('Курс успешно удален', 'success');
+            // Обновляем список курсов
+            loadAllCourses();
+        } else {
+            throw new Error(result.error || 'Ошибка при удалении курса');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления курса:', error);
+        showNotification('Ошибка при удалении курса: ' + error.message, 'error');
+    }
+}
+
+// Форматирование цены курса
+function formatCoursePrice(price) {
+    if (!price || price === '0.00' || price === 0) return '<span class="price-free">Бесплатно</span>';
+    return '<span class="price-value">' + new Intl.NumberFormat('ru-RU').format(price) + ' ₽</span>';
+}
+
+// Обработчик добавления курса
+async function handleAddCourse(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const courseData = {
+        name: formData.get('name').trim(),
+        description: formData.get('description').trim(),
+        duration: formData.get('duration').trim(),
+        price: parseFloat(formData.get('price')) || 0
+    };
+    
+    // Валидация
+    if (!validateCourseData(courseData)) {
+        return;
+    }
+    
+    // Показываем индикатор загрузки
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.innerHTML = '<span class="btn-loading"></span>';
+    submitBtn.disabled = true;
+    
+    const messageEl = document.getElementById('courseMessage');
+    
+    try {
+        const result = await apiFetch('courses.php', {
+            method: 'POST',
+            body: JSON.stringify(courseData)
+        });
+        
+        if (result.success) {
+            showNotification('Курс успешно добавлен!', 'success');
+            e.target.reset();
+            if (messageEl) {
+                messageEl.textContent = 'Курс успешно добавлен!';
+                messageEl.className = 'text-success';
+            }
+            // Обновляем список курсов после добавления
+            loadAllCourses();
+        } else {
+            throw new Error(result.error || 'Ошибка при добавлении курса');
+        }
+    } catch (error) {
+        console.error('Ошибка добавления курса:', error);
+        if (messageEl) {
+            messageEl.textContent = error.message;
+            messageEl.className = 'text-error';
+        }
+        showNotification('Ошибка при добавлении курса', 'error');
+    } finally {
+        // Восстанавливаем кнопку
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Валидация данных курса
+function validateCourseData(courseData) {
+    let isValid = true;
+    
+    // Очищаем предыдущие ошибки
+    clearCourseErrors();
+    
+    // Проверка названия
+    if (!courseData.name) {
+        showCourseError('courseNameError', 'Название курса обязательно');
+        isValid = false;
+    } else if (courseData.name.length < 3) {
+        showCourseError('courseNameError', 'Название должно содержать минимум 3 символа');
+        isValid = false;
+    }
+    
+    // Проверка описания
+    if (courseData.description && courseData.description.length > 1000) {
+        showCourseError('courseDescriptionError', 'Описание не должно превышать 1000 символов');
+        isValid = false;
+    }
+    
+    // Проверка цены
+    if (courseData.price < 0) {
+        showCourseError('coursePriceError', 'Цена не может быть отрицательной');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Показать ошибку для поля курса
+function showCourseError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = message;
+    }
+}
+
+// Очистить все ошибки курса
+function clearCourseErrors() {
+    const errorElements = [
+        'courseNameError',
+        'courseDescriptionError', 
+        'courseDurationError',
+        'coursePriceError'
+    ];
+    
+    errorElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = '';
+        }
+    });
+    
+    const messageEl = document.getElementById('courseMessage');
+    if (messageEl) {
+        messageEl.textContent = '';
+    }
+}
 // Загрузка всех заявок
 async function loadApplications() {
     try {
@@ -460,6 +750,70 @@ async function handleSupportResponse(e) {
     }
 }
 
+// === ФУНКЦИОНАЛ ДОБАВЛЕНИЯ КУРСОВ ===
+
+// Валидация данных курса
+function validateCourseData(courseData) {
+    let isValid = true;
+    
+    // Очищаем предыдущие ошибки
+    clearCourseErrors();
+    
+    // Проверка названия
+    if (!courseData.name) {
+        showCourseError('courseNameError', 'Название курса обязательно');
+        isValid = false;
+    } else if (courseData.name.length < 3) {
+        showCourseError('courseNameError', 'Название должно содержать минимум 3 символа');
+        isValid = false;
+    }
+    
+    // Проверка описания
+    if (courseData.description && courseData.description.length > 1000) {
+        showCourseError('courseDescriptionError', 'Описание не должно превышать 1000 символов');
+        isValid = false;
+    }
+    
+    // Проверка цены
+    if (courseData.price < 0) {
+        showCourseError('coursePriceError', 'Цена не может быть отрицательной');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Показать ошибку для поля курса
+function showCourseError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = message;
+    }
+}
+
+// Очистить все ошибки курса
+function clearCourseErrors() {
+    const errorElements = [
+        'courseNameError',
+        'courseDescriptionError', 
+        'courseDurationError',
+        'coursePriceError'
+    ];
+    
+    errorElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = '';
+        }
+    });
+    
+    const messageEl = document.getElementById('courseMessage');
+    if (messageEl) {
+        messageEl.textContent = '';
+    }
+}
+
+// Вспомогательные функции
 function showNotification(message, type = 'info') {
     // Удаляем существующие уведомления
     const existingNotifications = document.querySelectorAll('.popup-notification');
