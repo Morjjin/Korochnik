@@ -1,8 +1,11 @@
+// admin.js - обновленная версия с кастомным подтверждением удаления
+
 let currentPage = 1;
 const itemsPerPage = 6;
 let allApplications = [];
 let allCourses = [];
 let filteredCourses = [];
+let courseToDelete = null; // ДОБАВЛЕНО: для хранения курса, который собираемся удалить
 
 document.addEventListener('DOMContentLoaded', function() {
     // Проверяем авторизацию администратора
@@ -27,7 +30,13 @@ document.addEventListener('DOMContentLoaded', function() {
         addCourseForm.addEventListener('submit', handleAddCourse);
     }
     
-    // Закрытие модального окна по клику на фон
+    // Обработчик подтверждения удаления курса - ДОБАВЛЕНО
+    const confirmDeleteBtn = document.getElementById('confirmDeleteCourse');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', handleConfirmDeleteCourse);
+    }
+    
+    // Закрытие модальных окон по клику на фон
     const supportResponseModal = document.getElementById('supportResponseModal');
     if (supportResponseModal) {
         supportResponseModal.addEventListener('click', function(e) {
@@ -36,7 +45,102 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    const deleteCourseModal = document.getElementById('deleteCourseModal');
+    if (deleteCourseModal) {
+        deleteCourseModal.addEventListener('click', function(e) {
+            if (e.target === deleteCourseModal) {
+                hideDeleteCourseModal();
+            }
+        });
+    }
 });
+
+// ДОБАВЛЕНО: Функции для работы с модальным окном удаления курса
+function showDeleteCourseModal(courseId) {
+    const course = allCourses.find(c => c.id === courseId);
+    if (!course) return;
+    
+    courseToDelete = course;
+    
+    const modal = document.getElementById('deleteCourseModal');
+    const title = document.getElementById('deleteCourseTitle');
+    const message = document.getElementById('deleteCourseMessage');
+    const info = document.getElementById('deleteCourseInfo');
+    
+    if (title) title.textContent = `Удалить курс "${course.name}"?`;
+    
+    if (info) {
+        if (course.application_count > 0) {
+            info.innerHTML = `
+                <div class="delete-warning">
+                    <strong>Внимание!</strong> На этот курс есть ${course.application_count} заявок. 
+                    Удаление курса может повлиять на связанные данные.
+                </div>
+            `;
+            message.textContent = 'Вы уверены, что хотите удалить этот курс? Это действие нельзя отменить.';
+        } else {
+            info.innerHTML = `
+                <div class="delete-info">
+                    <strong>Информация о курсе:</strong><br>
+                    • Продолжительность: ${course.duration || 'не указана'}<br>
+                    • Цена: ${formatCoursePrice(course.price)}<br>
+                    • Заявок: ${course.application_count || 0}
+                </div>
+            `;
+            message.textContent = 'Вы уверены, что хотите удалить этот курс? Это действие нельзя отменить.';
+        }
+    }
+    
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function hideDeleteCourseModal() {
+    const modal = document.getElementById('deleteCourseModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    courseToDelete = null;
+}
+
+// ДОБАВЛЕНО: Обработчик подтверждения удаления
+async function handleConfirmDeleteCourse() {
+    if (!courseToDelete) return;
+    
+    try {
+        const result = await apiFetch(`courses.php/${courseToDelete.id}`, {
+            method: 'DELETE'
+        });
+        
+        if (result.success) {
+            showNotification('Курс успешно удален', 'success');
+            hideDeleteCourseModal();
+            // Обновляем список курсов
+            loadAllCourses();
+        } else {
+            throw new Error(result.error || 'Ошибка при удалении курса');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления курса:', error);
+        showNotification('Ошибка при удалении курса: ' + error.message, 'error');
+        hideDeleteCourseModal();
+    }
+}
+
+// Обновленная функция удаления курса - теперь показывает модальное окно вместо confirm
+function deleteCourse(courseId) {
+    const course = allCourses.find(c => c.id === courseId);
+    
+    if (course && course.application_count > 0) {
+        showNotification('Невозможно удалить курс: есть активные заявки', 'error');
+        return;
+    }
+    
+    // Вместо стандартного confirm показываем наше модальное окно
+    showDeleteCourseModal(courseId);
+}
 
 // Загрузка всех курсов для управления
 async function loadAllCourses() {
@@ -171,37 +275,6 @@ function displayCoursesList(courses) {
     `;
 }
 
-// Удаление курса
-async function deleteCourse(courseId) {
-    const course = allCourses.find(c => c.id === courseId);
-    
-    if (course && course.application_count > 0) {
-        showNotification('Невозможно удалить курс: есть активные заявки', 'error');
-        return;
-    }
-    
-    if (!confirm('Вы уверены, что хотите удалить этот курс? Это действие нельзя отменить.')) {
-        return;
-    }
-    
-    try {
-        const result = await apiFetch(`courses.php/${courseId}`, {
-            method: 'DELETE'
-        });
-        
-        if (result.success) {
-            showNotification('Курс успешно удален', 'success');
-            // Обновляем список курсов
-            loadAllCourses();
-        } else {
-            throw new Error(result.error || 'Ошибка при удалении курса');
-        }
-    } catch (error) {
-        console.error('Ошибка удаления курса:', error);
-        showNotification('Ошибка при удалении курса: ' + error.message, 'error');
-    }
-}
-
 // Форматирование цены курса
 function formatCoursePrice(price) {
     if (!price || price === '0.00' || price === 0) return '<span class="price-free">Бесплатно</span>';
@@ -325,6 +398,66 @@ function clearCourseErrors() {
         messageEl.textContent = '';
     }
 }
+
+function showNotification(message, type = 'info') {
+    // Удаляем существующие уведомления
+    const existingNotifications = document.querySelectorAll('.popup-notification');
+    existingNotifications.forEach(notif => notif.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `popup-notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Удаляем уведомление через 3 секунды
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Получение класса для статуса
+function getStatusClass(status) {
+    const statusMap = {
+        'Новая': 'new',
+        'Идет обучение': 'in-progress', 
+        'Обучение завершено': 'completed'
+    };
+    return statusMap[status] || 'new';
+}
+
+// Функция экранирования HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Состояния загрузки
+function showLoadingState() {
+    const applicationsList = document.getElementById('applicationsList');
+    if (applicationsList) {
+        applicationsList.innerHTML = '<div class="empty-state"><p class="text-muted">Загрузка заявок...</p></div>';
+    }
+}
+
+function showErrorState(message) {
+    const applicationsList = document.getElementById('applicationsList');
+    if (applicationsList) {
+        applicationsList.innerHTML = `
+            <div class="error-state">
+                <p class="text-error">${escapeHtml(message)}</p>
+                <button class="btn btn-primary mt-2" onclick="loadApplications()">
+                    Попробовать снова
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Остальные функции (loadApplications, displayApplications, updateApplicationStatus и т.д.)
+// остаются без изменений из предыдущей версии...
 // Загрузка всех заявок
 async function loadApplications() {
     try {

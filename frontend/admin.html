@@ -31,8 +31,7 @@
     <!-- Основной контент -->
     <main class="main-container">
 
-        <!-- Остальные разделы остаются без изменений -->
-        <div class="card">
+        <div class="card"></div>
             <h2 class="mb-2">Панель администратора</h2>
             <p class="text-muted mb-3">Управление заявками пользователей</p>
             
@@ -58,8 +57,8 @@
                     <p class="text-muted">Загрузка заявок...</p>
                 </div>
             </div>
-        </div>    
-
+        </div>
+        
         <!-- Форма добавления курса -->
         <div class="card">
             <h2 class="mb-2">Добавить новый курс</h2>
@@ -105,7 +104,7 @@
             </form>
         </div>
 
-        <!-- Управление существующими курсами - ОПТИМИЗИРОВАНО -->
+        <!-- Управление существующими курсами -->
         <div class="card">
             <div class="courses-management-header">
                 <div>
@@ -140,7 +139,10 @@
                     <p class="text-muted">Загрузка курсов...</p>
                 </div>
             </div>
-        </div>  
+        </div>
+
+        <!-- Остальные разделы -->
+        
 
         <div class="card">
             <h2 class="mb-2">Обращения в поддержку</h2>
@@ -172,7 +174,7 @@
         </div>
     </main>
 
-    <!-- Модальные окна и футер остаются без изменений -->
+    <!-- Модальное окно ответа на обращение -->
     <div class="modal" id="supportResponseModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -209,6 +211,34 @@
         </div>
     </div>
 
+    <!-- Модальное окно подтверждения удаления курса - ДОБАВЛЕНО -->
+    <div class="modal" id="deleteCourseModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Подтверждение удаления</h3>
+                <button class="modal-close" onclick="hideDeleteCourseModal()" aria-label="Закрыть окно">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning-icon">⚠️</div>
+                <h4 class="delete-course-title" id="deleteCourseTitle">Удалить курс?</h4>
+                <p class="delete-course-message" id="deleteCourseMessage">
+                    Вы уверены, что хотите удалить этот курс? Это действие нельзя отменить.
+                </p>
+                <div class="delete-course-info" id="deleteCourseInfo"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger btn-full" id="confirmDeleteCourse">
+                    Да, удалить
+                </button>
+                <button type="button" class="btn btn-secondary btn-full mt-1" 
+                        onclick="hideDeleteCourseModal()">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подвал -->
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-section">
@@ -225,10 +255,10 @@
             
             <div class="footer-section">
                 <h3>Полезные ссылки</h3>
-                <p><a href="index.html">Главная</a></p>
-                <p><a href="dashboard.html">Личный кабинет</a></p>
-                <p><a href="#">О нас</a></p>
-                <p><a href="#">Помощь</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('about')" class="footer-link">О нас</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('courses')" class="footer-link">Курсы</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('support')" class="footer-link">Поддержка</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('profile')" class="footer-link">Личный кабинет</a></p>
             </div>
         </div>
         <div class="footer-bottom">
