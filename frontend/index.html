@@ -35,7 +35,11 @@
                 <div class="logo-icon">К</div>
                 <div class="logo-text">Корочки.есть</div>
             </a>
-            <div class="navbar">
+                        <div class="navbar">
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Переключить тему" title="Переключить тему">
+                    <span class="icon sun-icon">☀️</span>
+                    <span class="icon moon-icon">🌙</span>
+                </button>
                 <div class="user-info" id="headerUserInfo" style="display: none;">
                     <div class="user-avatar-container">
                         <img id="headerAvatarIndex" src="" alt="Аватар пользователя" loading="lazy" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -73,7 +77,7 @@
                 <button class="hero-btn hero-btn-secondary" onclick="window.location.href='courses.html'" aria-label="Посмотреть все курсы">
                     Все курсы
                 </button>
-                <button class="hero-btn hero-btn-secondary" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})" aria-label="Узнать больше о нас">
+                <button class="hero-btn hero-btn-secondary" onclick="scrollToElement('#about', 80)" aria-label="Узнать больше о нас">
                     Узнать больше
                 </button>
             </div>
@@ -368,10 +372,10 @@
             
             <div class="footer-section">
                 <h3>Полезные ссылки</h3>
-                <p><a href="#">О нас</a></p>
-                <p><a href="#">Курсы</a></p>
-                <p><a href="#">Контакты</a></p>
-                <p><a href="#">Помощь</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('about')" class="footer-link">О нас</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('courses')" class="footer-link">Курсы</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('support')" class="footer-link">Поддержка</a></p>
+                <p><a href="javascript:void(0)" onclick="handleFooterLink('profile')" class="footer-link">Личный кабинет</a></p>
             </div>
         </div>
         <div class="footer-bottom">

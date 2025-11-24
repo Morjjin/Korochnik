@@ -26,6 +26,34 @@ const API_BASE = 'http://localhost/korochnik/backend/api';
 // Глобальные переменные
 let currentUser = null;
 
+// ===== ПЕРЕКЛЮЧЕНИЕ ТЕМЫ =====
+// Инициализация темы при загрузке
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+}
+
+// Переключение между светлой и тёмной темой
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Добавляем небольшую анимацию кнопке
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.style.transform = 'rotate(360deg)';
+        setTimeout(() => {
+            themeToggle.style.transform = '';
+        }, 300);
+    }
+}
+
+// Инициализируем тему сразу при загрузке скрипта
+initTheme();
+
 // Улучшенная функция для выполнения fetch запросов
 async function apiFetch(endpoint, options = {}) {
     const defaultOptions = {
@@ -179,6 +207,9 @@ function formatPhone(input) {
 
 // Обработчики форм
 document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация темы
+    initTheme();
+    
     // Форматирование телефона в реальном времени
     const phoneInput = document.getElementById('phone');
     if (phoneInput) {
@@ -1585,4 +1616,149 @@ document.addEventListener('DOMContentLoaded', function() {
         // Фоновое обновление кеша каждые 5 минут
         setInterval(() => backgroundUpdateReviews(REVIEWS_LIMIT), 300000);
     }
+});
+// ===== ОБРАБОТКА ССЫЛОК В ФУТЕРЕ =====
+
+function handleFooterLink(type) {
+    switch(type) {
+        case 'about':
+            // Плавная прокрутка к секции "О нас"
+            if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+                // Если мы на главной странице - плавная прокрутка
+                const target = getTargetWithOffset('#about');
+                if (target) {
+                    const targetPosition = target.element.getBoundingClientRect().top + window.pageYOffset - target.offset;
+                    smoothScrollTo({ getBoundingClientRect: () => ({ top: targetPosition - window.pageYOffset }) });
+                }
+            } else {
+                // Если на другой странице - переход на главную с якорем
+                window.location.href = 'index.html#about';
+            }
+            break;
+            
+        case 'support':
+            // Обработка ссылки на поддержку
+            const userToken = localStorage.getItem('userToken');
+            if (userToken) {
+                // Если пользователь авторизован - переход в ЛК на вкладку поддержки
+                if (window.location.pathname.endsWith('dashboard.html')) {
+                    // Если уже в ЛК - показываем поддержку
+                    if (typeof showSupportModal === 'function') {
+                        showSupportModal();
+                    }
+                } else {
+                    // Иначе переход в ЛК
+                    window.location.href = 'dashboard.html';
+                }
+            } else {
+                // Если не авторизован - показываем модалку авторизации
+                showAuthModal();
+                // Показываем сообщение
+                setTimeout(() => {
+                    const loginForm = document.getElementById('loginForm');
+                    if (loginForm && loginForm.classList.contains('active')) {
+                        showError('password', 'Для доступа к поддержке необходимо войти в систему');
+                    }
+                }, 500);
+            }
+            break;
+            
+        case 'profile':
+            // Обработка ссылки на личный кабинет
+            const isLoggedIn = localStorage.getItem('userToken');
+            if (isLoggedIn) {
+                const isAdmin = localStorage.getItem('isAdmin') === 'true';
+                window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
+            } else {
+                showAuthModal();
+                // Показываем сообщение
+                setTimeout(() => {
+                    const loginForm = document.getElementById('loginForm');
+                    if (loginForm && loginForm.classList.contains('active')) {
+                        showError('password', 'Для доступа в личный кабинет необходимо войти в систему');
+                    }
+                }, 500);
+            }
+            break;
+            
+        case 'courses':
+            // Простой переход на страницу курсов
+            window.location.href = 'courses.html';
+            break;
+    }
+}
+// Функция для обработки якорей при загрузке страницы
+function handleAnchorLinks() {
+    // Проверяем, есть ли якорь в URL
+    const hash = window.location.hash;
+    if (hash) {
+        // Ждем полной загрузки страницы и отрисовки DOM
+        setTimeout(() => {
+            const target = getTargetWithOffset(hash);
+            if (target) {
+                const targetPosition = target.element.getBoundingClientRect().top + window.pageYOffset - target.offset;
+                smoothScrollTo({ getBoundingClientRect: () => ({ top: targetPosition - window.pageYOffset }) });
+                
+                // Добавляем визуальную подсветку
+                target.element.classList.add('target-section');
+                setTimeout(() => {
+                    target.element.classList.remove('target-section');
+                }, 2000);
+            }
+        }, 300);
+    }
+}
+
+// Универсальная функция для плавной прокрутки к любому элементу
+function scrollToElement(selector, offset = 0) {
+    const element = document.querySelector(selector);
+    if (element) {
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset - offset;
+        smoothScrollTo({ getBoundingClientRect: () => ({ top: elementPosition - window.pageYOffset }) });
+    }
+}
+function smoothScrollTo(targetElement, duration = 1000) {
+    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    let startTime = null;
+
+    function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const run = easeInOutQuad(timeElapsed, startPosition, distance, duration);
+        window.scrollTo(0, run);
+        if (timeElapsed < duration) {
+            requestAnimationFrame(animation);
+        }
+    }
+
+    function easeInOutQuad(t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t + b;
+        t--;
+        return -c / 2 * (t * (t - 2) - 1) + b;
+    }
+
+    requestAnimationFrame(animation);
+}
+
+// Функция для поиска элемента с учетом отступа для фиксированной шапки
+function getTargetWithOffset(selector) {
+    const element = document.querySelector(selector);
+    if (!element) return null;
+    
+    // Вычисляем высоту шапки для корректного отступа
+    const header = document.querySelector('.header');
+    const headerHeight = header ? header.offsetHeight : 80;
+    
+    return {
+        element: element,
+        offset: headerHeight + 20 // +20px для небольшого отступа
+    };
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    handleAnchorLinks();
 });
