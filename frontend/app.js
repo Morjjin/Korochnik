@@ -1052,7 +1052,7 @@ function renderReviews(reviews) {
     container.appendChild(fragment);
 }
 
-// Функция для экранирования HTML (если еще нет)
+// Функция для экранирования HTML
 function escapeHtml(unsafe) {
     if (!unsafe) return '';
     return unsafe

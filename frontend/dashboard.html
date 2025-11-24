@@ -15,9 +15,13 @@
                 <div class="logo-text">Корочки.есть</div>
             </a>
             <div class="navbar">
-                <div class="user-info">
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Переключить тему" title="Переключить тему">
+                    <span class="icon sun-icon">☀️</span>
+                    <span class="icon moon-icon">🌙</span>
+                </button>
+                <div class="user-info" id="headerUserInfo" >
                     <div class="user-avatar-container">
-                        <img id="headerAvatar" src="" alt="Аватар" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <img id="headerAvatar" src="" alt="Аватар пользователя" loading="lazy" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="header-avatar-placeholder" style="display: none;">
                             <span id="headerAvatarInitial">П</span>
                         </div>

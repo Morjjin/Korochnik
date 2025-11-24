@@ -71,6 +71,17 @@
             border: 1px solid #e5e7eb;
         }
 
+        [data-theme="dark"] .course-card {
+            background-color: var(--gray-light);
+            border-color: var(--primary-light);
+        }
+        [data-theme="dark"] .course-title {
+            color: #ffff;
+        }
+        [data-theme="dark"] .course-description {
+            color: #ffff;
+        }
+
         .course-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -209,6 +220,9 @@
             flex: 1;
             margin-right: 1rem;
         }
+        [data-theme="dark"] .modal-title {
+            color: var(--dark);
+        }
 
         .modal-close {
             background: none;
@@ -248,6 +262,9 @@
             line-height: 1.6;
             margin-bottom: 1.5rem;
         }
+        [data-theme="dark"] .modal-description {
+            color: #ffff;
+        }
 
         .modal-details {
             display: grid;
@@ -258,12 +275,18 @@
             background: #f8fafc;
             border-radius: 8px;
         }
+        [data-theme="dark"] .modal-details {
+            background: #192230;
+        }
 
         .detail-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+        }
+        [data-theme="dark"] .detail-item {  
+            color: #ffff;
         }
 
         .detail-label {
@@ -283,6 +306,10 @@
             font-weight: 700;
             color: #059669;
             margin: 1.5rem 0;
+        }
+        [data-theme="dark"] .modal-price {
+            
+            color: #ffff;
         }
 
         .loading-courses {
@@ -332,7 +359,6 @@
             margin-bottom: 2rem;
         }
 
-        /* Добавьте этот класс для контейнера когда нет курсов */
         .courses-container-empty {
             display: flex;
             justify-content: center;
@@ -386,7 +412,6 @@
     </style>
 </head>
 <body>
-    <!-- Шапка -->
     <header class="header">
         <div class="header-container">
             <a href="index.html" class="logo">
@@ -394,6 +419,10 @@
                 <div class="logo-text">Корочки.есть</div>
             </a>
             <div class="navbar">
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Переключить тему" title="Переключить тему">
+                    <span class="icon sun-icon">☀️</span>
+                    <span class="icon moon-icon">🌙</span>
+                </button>
                 <div class="user-info" id="headerUserInfo" style="display: none;">
                     <div class="user-avatar-container">
                         <img id="headerAvatarCourses" src="" alt="Аватар пользователя" loading="lazy" class="header-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
