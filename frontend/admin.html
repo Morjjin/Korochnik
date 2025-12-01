@@ -37,7 +37,7 @@
     <!-- Основной контент -->
     <main class="main-container">
 
-        <div class="card"></div>
+        <div class="card">
             <h2 class="mb-2">Панель администратора</h2>
             <p class="text-muted mb-3">Управление заявками пользователей</p>
             
@@ -166,7 +166,19 @@
                         <option value="Закрыт">Закрытые</option>
                     </select>
                 </div>
-                
+
+                <div class="form-group form-group-no-margin">
+                    <label for="supportSearch" class="form-label visually-hidden">Поиск по имени или email</label>
+                    <input 
+                        type="text" 
+                        id="supportSearch" 
+                        class="search-input" 
+                        placeholder="Поиск по имени или email..." 
+                        oninput="filterSupportTickets()" 
+                        aria-label="Поиск обращений по имени или email"
+                    >
+                </div>
+
                 <button class="btn btn-secondary" onclick="loadSupportTickets()">
                     Обновить
                 </button>

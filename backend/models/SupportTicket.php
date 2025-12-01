@@ -120,6 +120,18 @@ class SupportTicket {
         }
         return false;
     }
+
+    public function delete() {
+        $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $this->id);
+
+        if ($stmt->execute()) {
+            return $stmt->rowCount() > 0;
+        }
+        return false;
+    }
 }
 ?>
 

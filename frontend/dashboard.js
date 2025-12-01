@@ -1,6 +1,13 @@
 // dashboard.js - функционал личного кабинета с улучшенной обработкой ошибок
 let currentUserData = null;
 
+// Пагинация для заявок и обращений пользователя
+let userApplications = [];
+let userApplicationsCurrentPage = 1;
+let userSupportTickets = [];
+let userSupportCurrentPage = 1;
+const userItemsPerPage = 6;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Проверяем авторизацию
     if (!localStorage.getItem('userToken')) {
@@ -51,8 +58,10 @@ async function loadApplications() {
         const result = await apiFetch('applications.php');
         
         if (result.success) {
-            displayApplications(result.data);
-            updateStats(result.data);
+            userApplications = result.data || [];
+            userApplicationsCurrentPage = 1;
+            displayApplications(userApplications);
+            updateStats(userApplications);
         } else {
             throw new Error(result.error);
         }
@@ -69,7 +78,13 @@ function displayApplications(applications) {
     
     if (!applicationsList) return;
     
-    if (!applications || applications.length === 0) {
+    const apps = applications || [];
+    const totalPages = Math.ceil(apps.length / userItemsPerPage);
+    const startIndex = (userApplicationsCurrentPage - 1) * userItemsPerPage;
+    const endIndex = startIndex + userItemsPerPage;
+    const paginatedApplications = apps.slice(startIndex, endIndex);
+
+    if (!apps.length) {
         applicationsList.innerHTML = `
             <div class="empty-state">
                 <h3 class="text-muted mb-2">У вас пока нет заявок</h3>
@@ -79,10 +94,13 @@ function displayApplications(applications) {
                 </button>
             </div>
         `;
+        // очищаем пагинацию
+        const paginationContainer = document.getElementById('applicationsPagination');
+        if (paginationContainer) paginationContainer.innerHTML = '';
         return;
     }
     
-    applicationsList.innerHTML = applications.map(app => `
+    applicationsList.innerHTML = paginatedApplications.map(app => `
         <div class="application-card">
             <div class="application-header">
                 <div>
@@ -127,6 +145,90 @@ function displayApplications(applications) {
             ` : ''}
         </div>
     `).join('');
+    
+    // пагинация
+    displayApplicationsPagination(apps.length, totalPages);
+}
+
+// Пагинация заявок пользователя
+function displayApplicationsPagination(totalItems, totalPages) {
+    const paginationContainer = document.getElementById('applicationsPagination');
+    if (!paginationContainer) return;
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    html += `
+        <button class="pagination-btn" onclick="changeApplicationsPage(${userApplicationsCurrentPage - 1})"
+                ${userApplicationsCurrentPage === 1 ? 'disabled' : ''}>
+            ‹ Предыдущая
+        </button>
+    `;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, userApplicationsCurrentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+        html += `<button class="pagination-btn" onclick="changeApplicationsPage(1)">1</button>`;
+        if (startPage > 2) {
+            html += `<span class="pagination-info">...</span>`;
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `
+            <button class="pagination-btn ${i === userApplicationsCurrentPage ? 'active' : ''}"
+                    onclick="changeApplicationsPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            html += `<span class="pagination-info">...</span>`;
+        }
+        html += `<button class="pagination-btn" onclick="changeApplicationsPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    html += `
+        <button class="pagination-btn" onclick="changeApplicationsPage(${userApplicationsCurrentPage + 1})"
+                ${userApplicationsCurrentPage === totalPages ? 'disabled' : ''}>
+            Следующая ›
+        </button>
+    `;
+
+    const startItem = (userApplicationsCurrentPage - 1) * userItemsPerPage + 1;
+    const endItem = Math.min(userApplicationsCurrentPage * userItemsPerPage, totalItems);
+    html += `
+        <span class="pagination-info">
+            Показано ${startItem}-${endItem} из ${totalItems}
+        </span>
+    `;
+
+    paginationContainer.innerHTML = html;
+}
+
+function changeApplicationsPage(page) {
+    const totalPages = Math.ceil(userApplications.length / userItemsPerPage);
+    if (page < 1 || page > totalPages) return;
+
+    userApplicationsCurrentPage = page;
+    displayApplications(userApplications);
+
+    const card = document.querySelector('.card h2.mb-3:nth-of-type(2)');
+    if (card && card.scrollIntoView) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // Получение класса для статуса
@@ -840,7 +942,9 @@ async function loadSupportTickets() {
         const result = await apiFetch('support.php');
         
         if (result.success) {
-            displaySupportTickets(result.data);
+            userSupportTickets = result.data || [];
+            userSupportCurrentPage = 1;
+            displaySupportTickets(userSupportTickets);
         } else {
             const ticketsList = document.getElementById('supportTicketsList');
             if (ticketsList) {
@@ -860,13 +964,21 @@ async function loadSupportTickets() {
 function displaySupportTickets(tickets) {
     const ticketsList = document.getElementById('supportTicketsList');
     if (!ticketsList) return;
+
+    const allTickets = tickets || [];
+    const totalPages = Math.ceil(allTickets.length / userItemsPerPage);
+    const startIndex = (userSupportCurrentPage - 1) * userItemsPerPage;
+    const endIndex = startIndex + userItemsPerPage;
+    const paginatedTickets = allTickets.slice(startIndex, endIndex);
     
-    if (!tickets || tickets.length === 0) {
+    if (!allTickets.length) {
         ticketsList.innerHTML = '<div class="empty-state"><p class="text-muted">У вас пока нет обращений в поддержку</p></div>';
+        const paginationContainer = document.getElementById('supportPagination');
+        if (paginationContainer) paginationContainer.innerHTML = '';
         return;
     }
     
-    ticketsList.innerHTML = tickets.map(ticket => {
+    ticketsList.innerHTML = paginatedTickets.map(ticket => {
         const statusClass = {
             'Открыт': 'status-new',
             'В обработке': 'status-processing',
@@ -897,6 +1009,90 @@ function displaySupportTickets(tickets) {
             </div>
         `;
     }).join('');
+
+    displaySupportPagination(allTickets.length, totalPages);
+}
+
+// Пагинация обращений поддержки
+function displaySupportPagination(totalItems, totalPages) {
+    const paginationContainer = document.getElementById('supportPagination');
+    if (!paginationContainer) return;
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    html += `
+        <button class="pagination-btn" onclick="changeSupportPage(${userSupportCurrentPage - 1})"
+                ${userSupportCurrentPage === 1 ? 'disabled' : ''}>
+            ‹ Предыдущая
+        </button>
+    `;
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, userSupportCurrentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+        html += `<button class="pagination-btn" onclick="changeSupportPage(1)">1</button>`;
+        if (startPage > 2) {
+            html += `<span class="pagination-info">...</span>`;
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `
+            <button class="pagination-btn ${i === userSupportCurrentPage ? 'active' : ''}"
+                    onclick="changeSupportPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            html += `<span class="pagination-info">...</span>`;
+        }
+        html += `<button class="pagination-btn" onclick="changeSupportPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    html += `
+        <button class="pagination-btn" onclick="changeSupportPage(${userSupportCurrentPage + 1})"
+                ${userSupportCurrentPage === totalPages ? 'disabled' : ''}>
+            Следующая ›
+        </button>
+    `;
+
+    const startItem = (userSupportCurrentPage - 1) * userItemsPerPage + 1;
+    const endItem = Math.min(userSupportCurrentPage * userItemsPerPage, totalItems);
+    html += `
+        <span class="pagination-info">
+            Показано ${startItem}-${endItem} из ${totalItems}
+        </span>
+    `;
+
+    paginationContainer.innerHTML = html;
+}
+
+function changeSupportPage(page) {
+    const totalPages = Math.ceil(userSupportTickets.length / userItemsPerPage);
+    if (page < 1 || page > totalPages) return;
+
+    userSupportCurrentPage = page;
+    displaySupportTickets(userSupportTickets);
+
+    const card = Array.from(document.querySelectorAll('.card h2.mb-3'))
+        .find(el => el.textContent.includes('Обращения в поддержку'));
+    if (card && card.scrollIntoView) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // Показать модальное окно поддержки
@@ -943,6 +1139,18 @@ document.addEventListener('DOMContentLoaded', function() {
 async function handleSupportSubmit(e) {
     e.preventDefault();
     
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    let isSuccessfullySubmitted = false;
+
+    // Защита от повторных нажатий: если уже отправляем, выходим
+    if (submitBtn && submitBtn.disabled) {
+        return;
+    }
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+
     const formData = {
         subject: document.getElementById('supportSubject').value.trim(),
         message: document.getElementById('supportMessageText').value.trim()
@@ -977,6 +1185,7 @@ async function handleSupportSubmit(e) {
         
         if (result.success) {
             showSupportMessage('Обращение успешно создано!', 'success');
+            isSuccessfullySubmitted = true;
             setTimeout(() => {
                 hideSupportModal();
                 loadSupportTickets();
@@ -986,6 +1195,13 @@ async function handleSupportSubmit(e) {
         }
     } catch (error) {
         showSupportMessage('Ошибка соединения с сервером', 'error');
+    } finally {
+        if (submitBtn) {
+            // Если не удалось создать обращение — даём пользователю повторить попытку
+            if (!isSuccessfullySubmitted) {
+                submitBtn.disabled = false;
+            }
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
 
@@ -177,6 +177,31 @@ if ($method == 'GET') {
             sendJsonResponse(array("error" => "Доступ запрещен"), 403);
         }
         sendJsonResponse(array("error" => "Пользователи не могут изменять тикеты"), 403);
+    }
+
+} elseif ($method == 'DELETE') {
+    // Удаление тикета (только админ)
+    if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
+        sendJsonResponse(array("error" => "Доступ запрещен"), 403);
+    }
+
+    $input = file_get_contents("php://input");
+    $data = json_decode($input);
+
+    if (!$data || empty($data->id)) {
+        sendJsonResponse(array("error" => "Неверный формат данных"), 400);
+    }
+
+    $ticket->id = $data->id;
+
+    if (!$ticket->readOne($ticket->id)) {
+        sendJsonResponse(array("error" => "Тикет не найден"), 404);
+    }
+
+    if ($ticket->delete()) {
+        sendJsonResponse(array("message" => "Тикет успешно удален"));
+    } else {
+        sendJsonResponse(array("error" => "Ошибка удаления тикета"), 500);
     }
 
 } else {

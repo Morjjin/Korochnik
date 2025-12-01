@@ -731,16 +731,62 @@ async function loadSupportTickets() {
     }
 }
 
-// Фильтрация обращений
-function filterSupportTickets() {
-    const filter = document.getElementById('supportStatusFilter').value;
-    
-    if (!filter) {
-        displaySupportTickets(allSupportTickets);
+// Удаление обращения в поддержку
+async function deleteSupportTicket(ticketId) {
+    const ticket = allSupportTickets.find(t => t.id === ticketId);
+    const title = ticket ? ticket.subject : `#${ticketId}`;
+
+    if (!confirm(`Вы действительно хотите удалить обращение "${title}"? Это действие нельзя отменить.`)) {
         return;
     }
-    
-    const filtered = allSupportTickets.filter(ticket => ticket.status === filter);
+
+    try {
+        const result = await apiFetch('support.php', {
+            method: 'DELETE',
+            body: JSON.stringify({ id: ticketId })
+        });
+
+        if (result.success) {
+            showNotification('Обращение успешно удалено', 'success');
+            // Удаляем обращение из локального массива и обновляем список
+            allSupportTickets = allSupportTickets.filter(t => t.id !== ticketId);
+            filterSupportTickets();
+        } else {
+            showNotification(result.error || 'Ошибка удаления обращения', 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления обращения:', error);
+        showNotification('Ошибка соединения при удалении обращения', 'error');
+    }
+}
+
+// Фильтрация обращений
+function filterSupportTickets() {
+    const statusFilterEl = document.getElementById('supportStatusFilter');
+    const searchInputEl = document.getElementById('supportSearch');
+
+    const statusFilter = statusFilterEl ? statusFilterEl.value : '';
+    const searchTerm = searchInputEl ? searchInputEl.value.toLowerCase().trim() : '';
+
+    let filtered = [...allSupportTickets];
+
+    if (statusFilter) {
+        filtered = filtered.filter(ticket => ticket.status === statusFilter);
+    }
+
+    if (searchTerm) {
+        filtered = filtered.filter(ticket => {
+            const name = (ticket.user_name || '').toLowerCase();
+            const email = (ticket.user_email || '').toLowerCase();
+            const subject = (ticket.subject || '').toLowerCase();
+            return (
+                name.includes(searchTerm) ||
+                email.includes(searchTerm) ||
+                subject.includes(searchTerm)
+            );
+        });
+    }
+
     displaySupportTickets(filtered);
 }
 
@@ -788,9 +834,14 @@ function displaySupportTickets(tickets) {
                 ` : ''}
                 <div class="ticket-footer">
                     <span class="ticket-date">Создано: ${date}</span>
-                    <button class="btn btn-primary btn-sm" onclick="showSupportResponseModal(${ticket.id})">
-                        ${ticket.admin_response ? 'Изменить ответ' : 'Ответить'}
-                    </button>
+                    <div class="flex gap-1">
+                        <button class="btn btn-primary btn-sm" onclick="showSupportResponseModal(${ticket.id})">
+                            ${ticket.admin_response ? 'Изменить ответ' : 'Ответить'}
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSupportTicket(${ticket.id})" title="Удалить обращение">
+                            🗑️
+                        </button>
+                    </div>
                 </div>
             </div>
         `;

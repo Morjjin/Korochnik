@@ -258,6 +258,22 @@ body {
     border-color: var(--gray-border);
 }
 
+[data-theme="dark"] .card h2 {
+    color: var(--dark);
+}
+
+[data-theme="dark"] .card h3 {
+    color: var(--dark);
+}
+
+[data-theme="dark"] .card h4 {
+    color: var(--dark);
+}
+
+[data-theme="dark"] .card p {
+    color: var(--gray);
+}
+
 .card:hover {
     box-shadow: var(--shadow-lg);
 }
@@ -311,6 +327,21 @@ body {
 [data-theme="dark"] .form-select {
     background: #0f172a;
     border-color: var(--gray-border);
+    color: var(--dark);
+}
+
+[data-theme="dark"] .form-select option {
+    background: #0f172a;
+    color: var(--dark);
+}
+
+[data-theme="dark"] .filter-select option {
+    background: #0f172a;
+    color: var(--dark);
+}
+
+[data-theme="dark"] .select-admin-action option {
+    background: #0f172a;
     color: var(--dark);
 }
 
@@ -646,6 +677,15 @@ body {
     color: var(--dark);
 }
 
+[data-theme="dark"] .modal-close {
+    color: var(--gray);
+}
+
+[data-theme="dark"] .modal-close:hover {
+    background: var(--gray-light);
+    color: var(--dark);
+}
+
 .footer {
     background: var(--gray-light);
     border-top: 1px solid var(--gray-border);
@@ -745,6 +785,12 @@ body {
     border: 1px solid rgba(16,24,40,0.04);
     transition: transform 0.18s ease, box-shadow 0.18s ease;
     position: relative;
+}
+
+[data-theme="dark"] .review-card {
+    background: #1e293b;
+    border-color: var(--gray-border);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .review-card:hover {
@@ -984,6 +1030,11 @@ body {
     transition: all 0.3s ease;
 }
 
+[data-theme="dark"] .support-ticket-card {
+    background: #1e293b;
+    border-color: var(--gray-border);
+}
+
 .support-ticket-card:hover {
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
@@ -1039,6 +1090,14 @@ body {
     line-height: 1.6;
 }
 
+[data-theme="dark"] .ticket-message {
+    color: var(--gray);
+}
+
+[data-theme="dark"] .ticket-message p {
+    color: var(--gray);
+}
+
 .ticket-response {
     background: white;
     border-radius: 6px;
@@ -1070,6 +1129,15 @@ body {
     color: var(--gray);
 }
 
+[data-theme="dark"] .ticket-footer {
+    border-top-color: var(--gray-border);
+    color: var(--gray);
+}
+
+[data-theme="dark"] .ticket-date {
+    color: var(--gray);
+}
+
 .btn-success:hover:not(:disabled) {
     background: #059669;
     transform: translateY(-1px);
@@ -1094,10 +1162,20 @@ body {
     min-width: 200px;
 }
 
+[data-theme="dark"] .filter-select {
+    background: #0f172a;
+    border-color: var(--gray-border);
+    color: var(--dark);
+}
+
 .filter-select:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+[data-theme="dark"] .filter-select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .admin-actions {
@@ -1108,6 +1186,15 @@ body {
     border-left: 4px solid var(--primary);
 }
 
+[data-theme="dark"] .admin-actions {
+    background: #0f172a;
+    border-left-color: var(--primary);
+}
+
+[data-theme="dark"] .admin-actions .form-label {
+    color: var(--dark);
+}
+
 .admin-actions .form-label {
     margin-bottom: 0.5rem;
     font-weight: 600;
@@ -1115,6 +1202,17 @@ body {
 
 .select-admin-action {
     margin-bottom: 0.5rem;
+}
+
+[data-theme="dark"] .select-admin-action {
+    background: #0f172a;
+    border-color: var(--gray-border);
+    color: var(--dark);
+}
+
+[data-theme="dark"] .select-admin-action:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .text-center { text-align: center; }
@@ -1184,10 +1282,22 @@ body {
     color: var(--gray);
 }
 
+[data-theme="dark"] .empty-state {
+    color: var(--gray);
+}
+
 .empty-state h3 {
     color: var(--gray);
     margin-bottom: 1rem;
     font-weight: 500;
+}
+
+[data-theme="dark"] .empty-state h3 {
+    color: var(--gray);
+}
+
+[data-theme="dark"] .empty-state p {
+    color: var(--gray);
 }
 
 .error-state {
@@ -1202,6 +1312,14 @@ body {
     min-height: 60vh;
 }
 
+[data-theme="dark"] .error-state {
+    color: var(--error);
+}
+
+[data-theme="dark"] .error-state p {
+    color: var(--error);
+}
+
 .error-state .btn {
     margin-top: 1rem;
 }
@@ -1213,6 +1331,10 @@ body {
     padding: 2rem;
     color: var(--gray);
     grid-column: 1 / -1;
+}
+
+[data-theme="dark"] .loading-state {
+    color: var(--gray);
 }
 
 @keyframes spin {
@@ -1687,6 +1809,17 @@ textarea.form-input {
     font-family: inherit;
 }
 
+[data-theme="dark"] textarea.form-input {
+    background: #0f172a;
+    border-color: var(--gray-border);
+    color: var(--dark);
+}
+
+[data-theme="dark"] textarea.form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -1705,6 +1838,12 @@ textarea.form-input {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9rem;
+}
+
+[data-theme="dark"] .pagination-btn {
+    background: #1e293b;
+    border-color: var(--gray-border);
+    color: var(--dark);
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -1728,6 +1867,10 @@ textarea.form-input {
     color: var(--gray);
     font-size: 0.9rem;
     margin: 0 1rem;
+}
+
+[data-theme="dark"] .pagination-info {
+    color: var(--gray);
 }
 
 .popup-notification {
@@ -1985,6 +2128,11 @@ textarea.form-input {
     border-left: 3px solid #d1d5db;
 }
 
+[data-theme="dark"] .password-requirements {
+    background-color: #0f172a;
+    border-left-color: var(--gray-border);
+}
+
 .requirement-met {
     color: #059669;
     display: flex;
@@ -2027,6 +2175,10 @@ textarea.form-input {
     color: #64748b;
     margin-top: 0.25rem;
     margin-bottom: 0.5rem;
+}
+
+[data-theme="dark"] .form-help {
+    color: var(--gray);
 }
 
 @media (max-width: 900px) {
@@ -2690,6 +2842,11 @@ textarea.form-input {
     transition: all 0.2s ease;
 }
 
+[data-theme="dark"] .course-management-card {
+    background: #1e293b;
+    border-color: var(--gray-border);
+}
+
 .course-management-card:hover {
     border-color: var(--primary-light);
     box-shadow: var(--shadow-lg);
@@ -2713,6 +2870,10 @@ textarea.form-input {
     color: var(--dark);
     margin-bottom: 0.5rem;
     line-height: 1.4;
+}
+
+[data-theme="dark"] .course-management-title {
+    color: var(--dark);
 }
 
 .course-management-meta {
@@ -2744,10 +2905,18 @@ textarea.form-input {
     border-radius: 8px;
 }
 
+[data-theme="dark"] .course-management-description {
+    background: #0f172a;
+}
+
 .course-management-description p {
     margin: 0;
     color: var(--gray);
     line-height: 1.5;
+}
+
+[data-theme="dark"] .course-management-description p {
+    color: var(--gray);
 }
 
 .course-management-footer {
@@ -2760,12 +2929,25 @@ textarea.form-input {
     color: var(--gray);
 }
 
+[data-theme="dark"] .course-management-footer {
+    border-top-color: var(--gray-border);
+    color: var(--gray);
+}
+
 .course-management-id {
     font-family: monospace;
 }
 
+[data-theme="dark"] .course-management-id {
+    color: var(--gray);
+}
+
 .course-management-applications {
     font-weight: 500;
+}
+
+[data-theme="dark"] .course-management-applications {
+    color: var(--gray);
 }
 
 @media (max-width: 768px) {
@@ -2812,6 +2994,14 @@ textarea.form-input {
     border-radius: 8px;
     font-size: 0.9rem;
     transition: all 0.2s ease;
+    background: white;
+    color: var(--dark);
+}
+
+[data-theme="dark"] .search-input {
+    background: #0f172a;
+    border-color: var(--gray-border);
+    color: var(--dark);
 }
 
 .search-input:focus {
@@ -2820,11 +3010,19 @@ textarea.form-input {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+[data-theme="dark"] .search-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
 .search-icon {
     position: absolute;
     right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
+    color: var(--gray);
+}
+
+[data-theme="dark"] .search-icon {
     color: var(--gray);
 }
 
@@ -2843,6 +3041,10 @@ textarea.form-input {
     background: var(--gray-light);
     border-radius: 8px;
     min-width: 100px;
+}
+
+[data-theme="dark"] .stat-badge {
+    background: #0f172a;
 }
 
 .stat-number {
@@ -2866,6 +3068,10 @@ textarea.form-input {
     border-radius: 8px;
 }
 
+[data-theme="dark"] .courses-table-container {
+    border-color: var(--gray-border);
+}
+
 .courses-table {
     width: 100%;
     display: flex;
@@ -2887,6 +3093,12 @@ textarea.form-input {
     z-index: 1;
 }
 
+[data-theme="dark"] .table-header {
+    background: #0f172a;
+    border-bottom-color: var(--gray-border);
+    color: var(--dark);
+}
+
 .table-body {
     display: flex;
     flex-direction: column;
@@ -2902,8 +3114,16 @@ textarea.form-input {
     align-items: start;
 }
 
+[data-theme="dark"] .table-row {
+    border-bottom-color: var(--gray-border);
+}
+
 .table-row:hover {
     background-color: var(--gray-light);
+}
+
+[data-theme="dark"] .table-row:hover {
+    background-color: #0f172a;
 }
 
 .table-row:last-child {
@@ -2999,6 +3219,12 @@ textarea.form-input {
     pointer-events: none;
     transition: opacity 0.2s ease;
     z-index: 10;
+}
+
+[data-theme="dark"] .tooltip {
+    background: #0f172a;
+    color: var(--dark);
+    border: 1px solid var(--gray-border);
 }
 
 .col-actions:hover .tooltip {
@@ -3099,10 +3325,23 @@ textarea.form-input {
     text-align: center;
 }
 
+[data-theme="dark"] .modal-body {
+    color: var(--dark);
+}
+
+[data-theme="dark"] .modal-body p {
+    color: var(--gray);
+}
+
 .modal-footer {
     padding: 1rem 1.5rem;
     border-top: 1px solid var(--gray-border);
     background: var(--gray-light);
+}
+
+[data-theme="dark"] .modal-footer {
+    background: #0f172a;
+    border-top-color: var(--gray-border);
 }
 
 .delete-warning-icon {
@@ -3122,6 +3361,10 @@ textarea.form-input {
     line-height: 1.5;
 }
 
+[data-theme="dark"] .delete-course-message {
+    color: var(--gray);
+}
+
 .delete-course-info {
     background: var(--gray-light);
     padding: 1rem;
@@ -3131,16 +3374,28 @@ textarea.form-input {
     font-size: 0.9rem;
 }
 
+[data-theme="dark"] .delete-course-info {
+    background: #0f172a;
+}
+
 .delete-warning {
     color: var(--error);
     font-size: 0.9rem;
     line-height: 1.4;
 }
 
+[data-theme="dark"] .delete-warning {
+    color: var(--error);
+}
+
 .delete-info {
     color: var(--gray);
     font-size: 0.9rem;
     line-height: 1.4;
+}
+
+[data-theme="dark"] .delete-info {
+    color: var(--gray);
 }
 
 @keyframes modalScaleIn {
